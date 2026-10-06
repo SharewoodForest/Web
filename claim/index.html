@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#e7eedd"><link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20aria-hidden%3D%22true%22%3E%3Cpath%20d%3D%22M16%203%206%2015h5l-6%208h22l-6-8h5z%22%20fill%3D%22%231c3a2b%22/%3E%3Crect%20x%3D%2214%22%20y%3D%2223%22%20width%3D%224%22%20height%3D%226%22%20rx%3D%221%22%20fill%3D%22%235e3f26%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2213%22%20r%3D%222.4%22%20fill%3D%22%23a3233a%22/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/style.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+<title>You've got a gift — Sharewood Forest</title>
+<meta name="description" content="Someone sent you a share of a company. Claim it to your wallet.">
+<meta property="og:title" content="You've got a gift on Sharewood Forest">
+<meta property="og:description" content="Someone sent you a share of a company. Open to claim it.">
+<meta name="referrer" content="no-referrer">
+</head>
+<body>
+<header class="wrap site-head">
+  <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 6 15h5l-6 8h22l-6-8h5z" fill="#1c3a2b"/><rect x="14" y="23" width="4" height="6" rx="1" fill="#5e3f26"/><circle cx="16" cy="13" r="2.4" fill="#a3233a"/></svg> Sharewood Forest</a>
+  <span class="net-pill" id="netPill"></span>
+</header>
+<main>
+  <section class="wrap hero">
+    <div class="tag-stage" aria-label="Your gift">
+      <span class="string"></span>
+      <div class="tag swing" id="tag">
+        <p class="tag-to" id="tagTo">For you</p>
+        <p class="tag-amount" id="tagAmount">…</p>
+        <p class="tag-unit" id="tagUnit">Opening your gift</p>
+        <p class="tag-msg" id="tagMsg"></p>
+        <p class="tag-from" id="tagFrom"></p>
+      </div>
+    </div>
+    <div>
+      <div class="panel" id="claimPanel">
+        <h2 id="claimTitle">Claim your gift</h2>
+        <p class="hint" id="claimSub" style="margin-bottom:1rem"></p>
+        <div id="claimForm" class="hidden">
+          <div class="field">
+            <label for="recipient">Your wallet address</label>
+            <input id="recipient" autocomplete="off" spellcheck="false" placeholder="0x…">
+            <p class="hint">Paste the address from your wallet app, or connect it below.</p>
+          </div>
+          <div class="actions" style="margin-bottom:1rem">
+            <button class="btn btn-quiet" id="useWalletBtn" type="button">Use my connected wallet</button>
+          </div>
+          <button class="btn btn-primary" id="claimBtn">Claim gift</button>
+          <p class="status" id="claimStatus" role="status" aria-live="polite"></p>
+          <p class="hint" style="margin-top:1rem">No wallet yet? Install Robinhood Wallet or MetaMask from your app store, create a wallet, then come back to this link.</p>
+        </div>
+        <div id="claimDone" class="hidden">
+          <p id="doneText"></p>
+          <div class="actions">
+            <a class="btn btn-quiet" id="txLink" target="_blank" rel="noopener">View transaction</a>
+            <button class="btn btn-quiet hidden" id="watchBtn">Add to my wallet</button>
+          </div>
+          <p style="margin-top:1.5rem"><a class="btn btn-primary" href="/">Send a gift of your own</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="site-foot"><div class="wrap"><p>Sharewood Forest is an independent app built on Robinhood Chain. It is not affiliated with or endorsed by Robinhood.</p><p>Stock tokens are not available everywhere. Check that gifting and receiving them is allowed where you and your recipient live. Nothing here is financial advice.</p><p>Questions: <a href="mailto:hello@sharewoodforest.app">hello@sharewoodforest.app</a></p></div></footer>
+<script type="module" src="/assets/claim.js"></script>
+</body>
+</html>

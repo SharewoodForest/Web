@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#e7eedd"><link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20aria-hidden%3D%22true%22%3E%3Cpath%20d%3D%22M16%203%206%2015h5l-6%208h22l-6-8h5z%22%20fill%3D%22%231c3a2b%22/%3E%3Crect%20x%3D%2214%22%20y%3D%2223%22%20width%3D%224%22%20height%3D%226%22%20rx%3D%221%22%20fill%3D%22%235e3f26%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2213%22%20r%3D%222.4%22%20fill%3D%22%23a3233a%22/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/style.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+<title>Sharewood Forest — give someone a share</title>
+<meta name="description" content="Send a piece of a real company as a gift. Your recipient claims it with a link — no crypto experience needed.">
+<meta property="og:title" content="Sharewood Forest — give someone a share">
+<meta property="og:description" content="Send a piece of a real company as a gift, claimable with a link.">
+</head>
+<body>
+<header class="wrap site-head">
+  <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 6 15h5l-6 8h22l-6-8h5z" fill="#1c3a2b"/><rect x="14" y="23" width="4" height="6" rx="1" fill="#5e3f26"/><circle cx="16" cy="13" r="2.4" fill="#a3233a"/></svg> Sharewood Forest</a>
+  <span class="net-pill" id="netPill"></span>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div>
+      <h1>Give someone a piece of a company they love.</h1>
+      <p class="lede">Pick a stock token, write a note, and send a link. They claim it to their own wallet in under a minute. If they never claim it, it comes back to you.</p>
+
+      <div class="panel" id="sendPanel">
+        <h2>Send a gift</h2>
+        <p class="notice hidden" id="soonNotice">Gifting opens soon. Email <a href="mailto:hello@sharewoodforest.app">hello@sharewoodforest.app</a> to hear when it's live.</p>
+
+        <div id="connectStep">
+          <button class="btn btn-primary" id="connectBtn">Connect wallet</button>
+          <p class="hint" style="margin-top:.6rem">Works with Robinhood Wallet, MetaMask, Rabby and other browser wallets.</p>
+        </div>
+
+        <form id="sendForm" class="hidden" novalidate>
+          <p class="hint" id="walletLine" style="margin-bottom:1rem"></p>
+          <div class="field">
+            <label for="token">What to give</label>
+            <select id="token"></select>
+            <p class="hint" id="balanceLine"></p>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="amount">Amount</label>
+              <input id="amount" inputmode="decimal" autocomplete="off" placeholder="0.5">
+            </div>
+            <div class="field">
+              <label for="duration">Claim within</label>
+              <select id="duration"></select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="toName">Their name</label>
+              <input id="toName" maxlength="40" placeholder="Maya">
+            </div>
+            <div class="field">
+              <label for="fromName">Your name</label>
+              <input id="fromName" maxlength="40" placeholder="Jake">
+            </div>
+          </div>
+          <div class="field">
+            <label for="message">Note</label>
+            <textarea id="message" maxlength="140" placeholder="Happy birthday! Here's your first share."></textarea>
+          </div>
+          <label class="check"><input type="checkbox" id="coverGas" checked> <span>Cover their network fee, so they can claim without owning any ETH (about /bin/sh.10).</span></label>
+          <div class="summary" id="summary"></div>
+          <button class="btn btn-primary" id="sendBtn" type="submit">Send gift</button>
+          <ol class="steps hidden" id="steps"></ol>
+          <p class="status" id="sendStatus" role="status" aria-live="polite"></p>
+        </form>
+
+        <div id="doneStep" class="hidden">
+          <h2>Your gift is ready</h2>
+          <p class="notice">Anyone with this link can claim the gift. Send it only to the person it's for.</p>
+          <div class="link-box"><input id="giftLink" readonly aria-label="Gift link"></div>
+          <div class="actions">
+            <button class="btn btn-primary" id="shareBtn" style="width:auto">Share link</button>
+            <button class="btn btn-quiet" id="copyBtn">Copy link</button>
+            <button class="btn btn-quiet" id="againBtn">Send another</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tag-stage" aria-label="Gift tag preview">
+      <span class="string"></span>
+      <div class="tag swing" id="tag">
+        <p class="tag-to" id="tagTo">For someone special</p>
+        <p class="tag-amount" id="tagAmount">1</p>
+        <p class="tag-unit" id="tagUnit">share of a company they love</p>
+        <p class="tag-msg" id="tagMsg">Here's to your future.</p>
+        <p class="tag-from" id="tagFrom">From a friend</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap how">
+    <h2>How it works</h2>
+    <ol>
+      <li><h3>You choose the gift</h3><p>Pick a stock token and an amount. It's held safely by the gift contract, not by us.</p></li>
+      <li><h3>You send a link</h3><p>Text it, email it, or tuck it in a card. The link is the gift, so keep it private.</p></li>
+      <li><h3>They claim it</h3><p>They open the link and choose a wallet. Unclaimed gifts return to you after they expire.</p></li>
+    </ol>
+  </section>
+
+  <section class="wrap sent hidden" id="sentSection">
+    <h2>Gifts you've sent</h2>
+    <p class="hint" style="margin:-1rem 0 1rem">Saved on this device only.</p>
+    <div class="gift-list" id="giftList"></div>
+  </section>
+</main>
+<footer class="site-foot"><div class="wrap"><p>Sharewood Forest is an independent app built on Robinhood Chain. It is not affiliated with or endorsed by Robinhood.</p><p>Stock tokens are not available everywhere. Check that gifting and receiving them is allowed where you and your recipient live. Nothing here is financial advice.</p><p>Questions: <a href="mailto:hello@sharewoodforest.app">hello@sharewoodforest.app</a></p></div></footer>
+<script type="module" src="/assets/app.js"></script>
+</body>
+</html>

@@ -7,9 +7,9 @@ export const NETWORKS = {
     rpc: "https://rpc.testnet.chain.robinhood.com",
     explorer: "https://explorer.testnet.chain.robinhood.com",
     faucet: "https://faucet.testnet.chain.robinhood.com",
-    gifts: "", // SharewoodGifts contract address
+    gifts: "0x4381387C7bE48ff92EDa19E3ACf92e8BAEeD6F6c", // SharewoodGifts contract address
     tokens: [
-      // { address: "0x...", symbol: "TSLA", name: "Tesla" },
+      { address: "0x72135E80C8D74DD4fdf5c4D433C5e763A967f252", symbol: "TSHARE", name: "Sharewood Test Share" },
     ],
   },
   mainnet: {

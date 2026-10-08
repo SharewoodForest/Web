@@ -439,7 +439,7 @@ const gasTipFor = (key) => ethers.parseEther(GAS_TIP_ETH[key] || "0.0001");
 
 /* Sponsored opening: URL of the deployed relayer (see relayer/README). Leave "" to make
    recipients pay their own network fee. */
-const RELAYER_URL = "";
+const RELAYER_URL = "https://sharewood-relayer.tec5upor1.workers.dev";
 
 const GIFTS_ABI = [
   "function createGift(address[] tokens,uint256[] amounts,address claimSigner,uint64 expiresIn,uint256 gasTip,string cardURI) payable returns (uint256)",

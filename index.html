@@ -1,112 +1,822 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#e7eedd"><link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20aria-hidden%3D%22true%22%3E%3Cpath%20d%3D%22M16%203%206%2015h5l-6%208h22l-6-8h5z%22%20fill%3D%22%231c3a2b%22/%3E%3Crect%20x%3D%2214%22%20y%3D%2223%22%20width%3D%224%22%20height%3D%226%22%20rx%3D%221%22%20fill%3D%22%235e3f26%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2213%22%20r%3D%222.4%22%20fill%3D%22%23a3233a%22/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/style.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
-<title>Sharewood Forest — give someone a share</title>
-<meta name="description" content="Send a piece of a real company as a gift. Your recipient claims it with a link — no crypto experience needed.">
-<meta property="og:title" content="Sharewood Forest — give someone a share">
-<meta property="og:description" content="Send a piece of a real company as a gift, claimable with a link.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sharewood Forest · Send a gift</title>
+<meta name="description" content="Wrap tokens and stock tokens in a gift card and send them as a link.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+<style>
+:root{
+  --canvas:#06110b; --panel:rgba(12,28,20,.88); --panel-2:#10261c; --field:#0b1d14;
+  --gold:#d4af37; --gold-l:#fbe69b; --gold-d:#8b6d1b;
+  --line:rgba(212,175,55,.35); --line-s:rgba(212,175,55,.16);
+  --text:#fefce8; --muted:#a3b3a9; --ok:#34d399; --bad:#f87171;
+  --radius-lg:24px; --radius-sm:14px;
+  --display:"Cinzel",Georgia,serif; --serif:"Newsreader",Georgia,serif;
+  --sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  --foil:linear-gradient(135deg,#fff3c4 0%,#d4af37 40%,#fbe69b 60%,#aa820a 100%);
+  --gold-btn:linear-gradient(135deg,var(--gold-l) 0%,var(--gold) 60%,var(--gold-d) 100%);
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;color:var(--text);font:15px/1.6 var(--sans);
+  background:radial-gradient(1200px 600px at 80% -10%,#123322 0%,transparent 60%),radial-gradient(900px 500px at -10% 30%,#0e2a1c 0%,transparent 55%),var(--canvas);
+  background-attachment:fixed;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+a{color:var(--gold)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold-l);outline-offset:2px}
+.foil{background:var(--foil);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:12px clamp(16px,4vw,48px);background:rgba(6,17,11,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.brand .mark{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--line)}
+.brand .mark svg{width:22px;height:22px}
+.brand b{font:700 1.1rem var(--display);letter-spacing:.04em}
+.wallet{display:flex;align-items:center;gap:10px}
+.addr{font:600 .8rem var(--mono);color:var(--gold);padding:7px 12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
+.addr:empty{display:none}
+
+.btn{border:0;border-radius:16px;padding:12px 22px;font-weight:700;cursor:pointer;color:#0b1a12;background:var(--gold-btn);
+  box-shadow:0 10px 30px -12px rgba(212,175,55,.55);transition:transform .12s,filter .15s;white-space:nowrap}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+.btn.ghost{background:transparent;color:var(--gold);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.ghost:hover{background:rgba(212,175,55,.08)}
+.btn.big{padding:17px 28px;font-size:1rem;width:100%;letter-spacing:.02em}
+.btn.small{padding:8px 14px;font-size:.82rem;border-radius:12px}
+
+main{max-width:1240px;margin:0 auto;padding:28px clamp(16px,4vw,48px) 64px}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin:8px 0 28px}
+.intro h1{font:700 clamp(1.9rem,4.4vw,3.1rem)/1.1 var(--display);margin:0 0 10px;max-width:20ch}
+.intro p{margin:0;color:var(--muted);font-size:1.05rem;max-width:46ch}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{font:600 .72rem var(--mono);letter-spacing:.04em;padding:7px 12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line-s);color:var(--muted)}
+.badge b{color:var(--ok);font-weight:700}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(24px,3.5vw,48px);align-items:start}
+.stage{position:sticky;top:88px}
+.stage-head{display:flex;justify-content:space-between;align-items:center;margin:0 4px 12px;font:700 .72rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.stage-head span:first-child{color:var(--gold)}
+.card-frame{border-radius:22px;overflow:hidden;aspect-ratio:600/380;background:#0c2016;
+  box-shadow:0 30px 80px -15px rgba(0,0,0,.95),0 0 50px rgba(212,175,55,.18)}
+.card-frame img,.card-frame svg{display:block;width:100%;height:100%}
+.stage-note{font-size:.85rem;color:var(--muted);margin:14px 4px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+.steps{list-style:none;margin:0;padding:clamp(20px,3vw,32px);counter-reset:step;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+.step{counter-increment:step;padding:24px 0;border-top:1px solid var(--line-s)}
+.step:first-child{border-top:0;padding-top:4px}
+.step:last-child{padding-bottom:0}
+.step h2{font:700 .78rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.step h2::before{content:counter(step);width:22px;height:22px;border-radius:50%;background:var(--gold);color:#0b1a12;display:inline-grid;place-items:center;font-size:.72rem;letter-spacing:0;flex:none}
+.step .hint{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+label{display:block;font-weight:600;font-size:.82rem;margin:14px 0 6px;color:#d9e2dc}
+input,select,textarea{width:100%;padding:12px 14px;border:1px solid var(--line-s);border-radius:var(--radius-sm);background:var(--field);color:var(--text)}
+input::placeholder,textarea::placeholder{color:#5f7368}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+select option{background:#0b1d14;color:var(--text)}
+#ethAmt{font:700 1.4rem var(--mono);padding:14px 16px}
+textarea{resize:vertical;min-height:84px;font-family:var(--serif);font-size:1.02rem;font-style:italic}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(212,175,55,.15)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.token-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:8px}
+.token-row .tok-addr{font:500 .82rem var(--mono)}
+.token-row .tok-amt{font:600 .95rem var(--mono)}
+.token-row .sym{grid-column:1/-1;font:600 .75rem var(--mono);color:var(--gold);margin:-2px 2px 4px}
+.icon-btn{border:1px solid var(--line-s);background:var(--panel-2);border-radius:12px;width:44px;height:44px;cursor:pointer;font-size:1.1rem;color:var(--muted)}
+.icon-btn:hover{color:var(--bad);border-color:rgba(248,113,113,.4)}
+.add-token{margin-top:12px}
+
+.themes{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.theme{border:1px solid var(--line-s);background:var(--panel-2);border-radius:999px;padding:7px 14px 7px 8px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.85rem;color:#d9e2dc}
+.theme i{width:20px;height:20px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.theme[aria-pressed="true"]{border-color:var(--gold);background:rgba(212,175,55,.12);color:var(--gold-l);font-weight:700}
+
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:500;margin-top:18px;cursor:pointer;padding:12px 14px;border-radius:var(--radius-sm);background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2)}
+.check input{width:18px;height:18px;margin:3px 0 0;flex:none;accent-color:var(--gold)}
+.summary{display:flex;justify-content:space-between;font-size:.88rem;padding:8px 0;border-top:1px dashed var(--line-s);color:var(--muted)}
+.summary b{font-family:var(--mono);color:var(--text)}
+.summary:first-of-type{border-top:0}
+.status{margin-top:14px;font-size:.9rem;padding:12px 14px;border-radius:var(--radius-sm);display:none;border:1px solid transparent}
+.status.show{display:block}
+.status.info{background:rgba(212,175,55,.08);border-color:var(--line-s);color:var(--gold-l)}
+.status.error{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:#fecaca}
+.status.ok{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);color:#a7f3d0}
+
+.share-box{display:none;border-radius:var(--radius-lg);padding:24px;margin-top:18px;background:linear-gradient(160deg,#163626,#0c2016);border:1px solid var(--line)}
+.share-box.show{display:block}
+.share-box h2{font:700 1.3rem var(--display);margin:0 0 6px}
+.share-box p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
+.share-box input{font:500 .8rem var(--mono)}
+.share-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.how div{background:var(--panel);border:1px solid var(--line-s);border-radius:var(--radius-lg);padding:22px}
+.how b{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);color:var(--gold);font-family:var(--mono)}
+.how h3{font:700 1rem var(--display);margin:12px 0 6px}
+.how p{margin:0;color:var(--muted);font-size:.9rem}
+
+/* Claim view */
+.claim{max-width:600px;margin:0 auto;text-align:center}
+.claim .pill{display:inline-flex;gap:8px;align-items:center;margin-top:18px;padding:7px 14px;border-radius:999px;font:700 .78rem var(--sans);color:#1a1405;
+  background:radial-gradient(circle at 35% 35%,#ffd700 0%,#d4af37 45%,#8a6408 100%);box-shadow:0 6px 16px rgba(0,0,0,.6),inset 0 2px 4px rgba(255,255,255,.5)}
+.claim h1{font:700 clamp(1.7rem,4.5vw,2.5rem)/1.15 var(--display);margin:16px 0 8px}
+.claim .lead{color:var(--muted);margin:0 0 22px}
+.contents{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px 22px;margin:20px 0;text-align:left}
+.contents h2{font:700 .75rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+.item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px dashed var(--line-s);font-size:1rem}
+.item:first-of-type{border-top:0}
+.item b{font:700 1.05rem var(--mono);color:var(--gold-l)}
+.fine{font-size:.84rem;color:var(--muted)}
+
+/* Sent gifts */
+.sent{margin-top:48px}
+.sent h2{font:700 1.3rem var(--display);margin:0 0 4px}
+.sent-list{display:grid;gap:8px;margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);padding:8px}
+.sent-item{border-radius:var(--radius-sm);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:.9rem}
+.sent-item + .sent-item{border-top:1px solid var(--line-s)}
+
+footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 40px;border-top:1px solid var(--line-s);margin-top:24px}
+[hidden]{display:none!important}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .stage{position:static;order:-1}
+  .how{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .brand b{font-size:.95rem}
+  .brand .mark{width:34px;height:34px}
+  .addr{display:none}
+  .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
 <body>
-<header class="wrap site-head">
-  <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 6 15h5l-6 8h22l-6-8h5z" fill="#1c3a2b"/><rect x="14" y="23" width="4" height="6" rx="1" fill="#5e3f26"/><circle cx="16" cy="13" r="2.4" fill="#a3233a"/></svg> Sharewood Forest</a>
-  <span class="net-pill" id="netPill"></span>
+<header>
+  <a class="brand" href="#">
+    <span class="mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 9 18h6L7 28h10v8h6v-8h10l-8-10h6z" fill="#d4af37"/></svg></span>
+    <b class="foil">Sharewood Forest</b>
+  </a>
+  <div class="wallet">
+    <span class="addr" id="addr"></span>
+    <button class="btn small" id="connectBtn">Connect wallet</button>
+  </div>
 </header>
 
 <main>
-  <section class="wrap hero">
-    <div>
-      <h1>Give someone a piece of a company they love.</h1>
-      <p class="lede">Pick a stock token, write a note, and send a link. They claim it to their own wallet in under a minute. If they never claim it, it comes back to you.</p>
-
-      <div class="panel" id="sendPanel">
-        <h2>Send a gift</h2>
-        <p class="notice hidden" id="soonNotice">Gifting opens soon. Email <a href="mailto:hello@sharewoodforest.app">hello@sharewoodforest.app</a> to hear when it's live.</p>
-
-        <div id="connectStep">
-          <button class="btn btn-primary" id="connectBtn">Connect wallet</button>
-          <p class="hint" style="margin-top:.6rem">Works with Robinhood Wallet, MetaMask, Rabby and other browser wallets.</p>
-        </div>
-
-        <form id="sendForm" class="hidden" novalidate>
-          <p class="hint" id="walletLine" style="margin-bottom:1rem"></p>
-          <div class="field">
-            <label for="token">What to give</label>
-            <select id="token"></select>
-            <p class="hint" id="balanceLine"></p>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="amount">Amount</label>
-              <input id="amount" inputmode="decimal" autocomplete="off" placeholder="0.5">
-            </div>
-            <div class="field">
-              <label for="duration">Claim within</label>
-              <select id="duration"></select>
-            </div>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="toName">Their name</label>
-              <input id="toName" maxlength="40" placeholder="Maya">
-            </div>
-            <div class="field">
-              <label for="fromName">Your name</label>
-              <input id="fromName" maxlength="40" placeholder="Jake">
-            </div>
-          </div>
-          <div class="field">
-            <label for="message">Note</label>
-            <textarea id="message" maxlength="140" placeholder="Happy birthday! Here's your first share."></textarea>
-          </div>
-          <label class="check"><input type="checkbox" id="coverGas" checked> <span>Cover their network fee, so they can claim without owning any ETH (about /bin/sh.10).</span></label>
-          <div class="summary" id="summary"></div>
-          <button class="btn btn-primary" id="sendBtn" type="submit">Send gift</button>
-          <ol class="steps hidden" id="steps"></ol>
-          <p class="status" id="sendStatus" role="status" aria-live="polite"></p>
-        </form>
-
-        <div id="doneStep" class="hidden">
-          <h2>Your gift is ready</h2>
-          <p class="notice">Anyone with this link can claim the gift. Send it only to the person it's for.</p>
-          <div class="link-box"><input id="giftLink" readonly aria-label="Gift link"></div>
-          <div class="actions">
-            <button class="btn btn-primary" id="shareBtn" style="width:auto">Share link</button>
-            <button class="btn btn-quiet" id="copyBtn">Copy link</button>
-            <button class="btn btn-quiet" id="againBtn">Send another</button>
-          </div>
-        </div>
+  <!-- ============ SEND VIEW ============ -->
+  <section id="sendView">
+    <div class="intro">
+      <div>
+        <h1 class="foil">Give someone a piece of a company they love.</h1>
+        <p>Wrap stock tokens, tokens or ETH in a gift certificate. They open it with a link, and it's theirs.</p>
+      </div>
+      <div class="badges">
+        <span class="badge"><b>●</b> Held by a smart contract</span>
+        <span class="badge">Returns to you if unopened</span>
       </div>
     </div>
 
-    <div class="tag-stage" aria-label="Gift tag preview">
-      <span class="string"></span>
-      <div class="tag swing" id="tag">
-        <p class="tag-to" id="tagTo">For someone special</p>
-        <p class="tag-amount" id="tagAmount">1</p>
-        <p class="tag-unit" id="tagUnit">share of a company they love</p>
-        <p class="tag-msg" id="tagMsg">Here's to your future.</p>
-        <p class="tag-from" id="tagFrom">From a friend</p>
-      </div>
+    <div class="layout">
+      <ol class="steps">
+        <li class="step">
+          <h2>What's inside</h2>
+          <p class="hint">Pick a network, then add what you want to give.</p>
+          <label for="chainSel">Network</label>
+          <select id="chainSel"></select>
+          <label for="ethAmt">ETH</label>
+          <input id="ethAmt" type="number" min="0" step="any" placeholder="0.01" inputmode="decimal">
+          <label>Tokens and stock tokens</label>
+          <div id="tokenRows"></div>
+          <button class="btn ghost small add-token" id="addTokenBtn" type="button">Add a token</button>
+          <p class="fine" style="margin-top:10px">Paste the token's contract address. Up to 5 tokens per gift.</p>
+        </li>
+
+        <li class="step">
+          <h2>Dedication</h2>
+          <p class="hint">Engraved on the certificate they keep.</p>
+          <div class="row">
+            <div><label for="toName">To</label><input id="toName" maxlength="24" placeholder="Maya"></div>
+            <div><label for="fromName">From</label><input id="fromName" maxlength="24" placeholder="Jake"></div>
+          </div>
+          <label for="msg">Message</label>
+          <textarea id="msg" maxlength="110" placeholder="Happy birthday. Plant it and watch it grow."></textarea>
+          <label>Style</label>
+          <div class="themes" id="themes"></div>
+        </li>
+
+        <li class="step">
+          <h2>Send it</h2>
+          <p class="hint">If they don't open it in time, you can take it back.</p>
+          <label for="expiry">They have</label>
+          <select id="expiry">
+            <option value="7">7 days to open it</option>
+            <option value="30" selected>30 days to open it</option>
+            <option value="90">90 days to open it</option>
+            <option value="365">1 year to open it</option>
+          </select>
+          <label class="check"><input type="checkbox" id="coverGas" checked> Cover their network fee so opening is free for them</label>
+          <div style="margin-top:16px" id="summary"></div>
+          <button class="btn big" id="sendBtn" style="margin-top:16px">Seal and send gift</button>
+          <div class="status" id="sendStatus" role="status" aria-live="polite"></div>
+        </li>
+      </ol>
+
+      <aside class="stage">
+        <div class="stage-head"><span>Gift certificate</span><span>Live preview</span></div>
+        <div class="card-frame" id="preview"></div>
+        <div class="stage-note"><span>Minted to them as a keepsake when they open it.</span><button class="btn ghost small" id="shuffleBtn" type="button">New serial</button></div>
+        <div class="share-box" id="shareBox">
+          <h2 class="foil">Your gift is sealed.</h2>
+          <p>Send this link to the person it's for. Anyone with the link can open the gift, so share it only with them.</p>
+          <input id="shareLink" readonly aria-label="Gift link">
+          <div class="share-actions">
+            <button class="btn small" id="copyBtn">Copy link</button>
+            <button class="btn ghost small" id="nativeShareBtn" hidden>Share</button>
+          </div>
+        </div>
+      </aside>
     </div>
+
+    <section class="how" aria-label="How it works">
+      <div><b>1</b><h3>Seal it</h3><p>Your tokens go into a smart contract on the network you pick, not to us.</p></div>
+      <div><b>2</b><h3>Share the link</h3><p>Send the private link by text or email. Whoever has it can open the gift, so send it only to them.</p></div>
+      <div><b>3</b><h3>They open it</h3><p>They connect a wallet and receive everything inside plus the certificate. Unopened gifts come back to you.</p></div>
+    </section>
+
+    <section class="sent" id="sentSection" hidden>
+      <h2>Gifts you've sent</h2>
+      <p class="fine">Saved in this browser only. Unopened gifts can be taken back after they expire.</p>
+      <div class="sent-list" id="sentList"></div>
+    </section>
   </section>
 
-  <section class="wrap how">
-    <h2>How it works</h2>
-    <ol>
-      <li><h3>You choose the gift</h3><p>Pick a stock token and an amount. It's held safely by the gift contract, not by us.</p></li>
-      <li><h3>You send a link</h3><p>Text it, email it, or tuck it in a card. The link is the gift, so keep it private.</p></li>
-      <li><h3>They claim it</h3><p>They open the link and choose a wallet. Unclaimed gifts return to you after they expire.</p></li>
-    </ol>
-  </section>
-
-  <section class="wrap sent hidden" id="sentSection">
-    <h2>Gifts you've sent</h2>
-    <p class="hint" style="margin:-1rem 0 1rem">Saved on this device only.</p>
-    <div class="gift-list" id="giftList"></div>
+  <!-- ============ CLAIM VIEW ============ -->
+  <section id="claimView" class="claim" hidden>
+    <span class="pill">🎁 Sharewood gift</span>
+    <h1 id="claimTitle" class="foil">Opening your gift…</h1>
+    <p class="lead" id="claimLead"></p>
+    <div class="card-frame" id="claimCard"></div>
+    <div class="contents" id="claimContents" hidden>
+      <h2>Inside</h2>
+      <div id="claimItems"></div>
+    </div>
+    <button class="btn big" id="claimBtn" hidden>Open gift</button>
+    <p class="fine" id="claimGasNote" hidden style="text-align:center;margin-top:10px"></p>
+    <div class="status" id="claimStatus" role="status" aria-live="polite"></div>
   </section>
 </main>
-<footer class="site-foot"><div class="wrap"><p>Sharewood Forest is an independent app built on Robinhood Chain. It is not affiliated with or endorsed by Robinhood.</p><p>Stock tokens are not available everywhere. Check that gifting and receiving them is allowed where you and your recipient live. Nothing here is financial advice.</p><p>Questions: <a href="mailto:hello@sharewoodforest.app">hello@sharewoodforest.app</a></p></div></footer>
-<script type="module" src="/assets/app.js"></script>
+
+<footer>Sharewood Forest. Gifts are held by a smart contract until they're opened or returned.</footer>
+
+<script>
+/* ===================================================================
+   CONFIG: paste deployed SharewoodGifts addresses here after deploy.
+   Leave "" for chains where it isn't deployed yet.
+   =================================================================== */
+const CHAINS = {
+  robinhood:        { id: 4663,   name: "Robinhood Chain", rpc: "https://rpc.mainnet.chain.robinhood.com", explorer: "https://robinhoodchain.blockscout.com", gifts: "" },
+  base:             { id: 8453,   name: "Base",            rpc: "https://mainnet.base.org",                explorer: "https://basescan.org",                 gifts: "" },
+  arbitrum:         { id: 42161,  name: "Arbitrum",        rpc: "https://arb1.arbitrum.io/rpc",            explorer: "https://arbiscan.io",                  gifts: "" },
+  baseSepolia:      { id: 84532,  name: "Base Sepolia (test)",     rpc: "https://sepolia.base.org",               explorer: "https://sepolia.basescan.org", gifts: "0xE9712892aB4607510BCb545f1B1377b69f6AE589", test: true },
+  arbitrumSepolia:  { id: 421614, name: "Arbitrum Sepolia (test)", rpc: "https://sepolia-rollup.arbitrum.io/rpc", explorer: "https://sepolia.arbiscan.io", gifts: "", test: true },
+  robinhoodTestnet: { id: 46630,  name: "Robinhood Testnet (test)", rpc: "", explorer: "", gifts: "", test: true },
+};
+
+/* Gas tip the sender adds when "Cover their network fee" is ticked, per network (ETH).
+   It pays whoever submits the opening transaction (your relayer). Adjust if gas changes. */
+const GAS_TIP_ETH = { robinhood: "0.0001", base: "0.0001", arbitrum: "0.0001",
+  baseSepolia: "0.0001", arbitrumSepolia: "0.0001", robinhoodTestnet: "0.0001" };
+const gasTipFor = (key) => ethers.parseEther(GAS_TIP_ETH[key] || "0.0001");
+
+/* Sponsored opening: URL of the deployed relayer (see relayer/README). Leave "" to make
+   recipients pay their own network fee. */
+const RELAYER_URL = "";
+
+const GIFTS_ABI = [
+  "function createGift(address[] tokens,uint256[] amounts,address claimSigner,uint64 expiresIn,uint256 gasTip,string cardURI) payable returns (uint256)",
+  "function claim(uint256 giftId,address recipient,bytes signature)",
+  "function refund(uint256 giftId)",
+  "function fee() view returns (uint256)",
+  "function getGift(uint256 giftId) view returns (tuple(address sender,address claimSigner,uint64 expiresAt,uint8 status,uint256 ethAmount,uint256 gasTip,address[] tokens,uint256[] amounts,string cardURI))",
+  "event GiftCreated(uint256 indexed giftId,address indexed sender,address claimSigner,uint64 expiresAt)",
+  "error BadInput()","error FeeTooHigh()","error NotOpen()","error Expired()","error NotExpired()","error NotSender()","error BadSignature()","error EthTransferFailed()",
+];
+const ERC20_ABI = [
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function allowance(address,address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+  "function balanceOf(address) view returns (uint256)",
+];
+const MAX_TOKENS = 5;
+const STATUS = ["None", "Open", "Claimed", "Returned"];
+const $ = (id) => document.getElementById(id);
+
+/* ======================= Gift card generator ======================= */
+const THEMES = {
+  emerald: { label: "Emerald & Gold", cert: true, bg: ["#163626", "#0c2016", "#06120c"], gold: ["#fff3c4", "#d4af37", "#fbe69b", "#aa820a"], line: "#d4af37", ink: "#fefce8", muted: "#c9d6ce", swatch: ["#163626", "#d4af37"] },
+  neon:    { label: "Neon",           cert: true, bg: ["#0d281a", "#07170e", "#030805"], gold: ["#dcfce7", "#00c805", "#86efac", "#007003"], line: "#00c805", ink: "#f0fdf4", muted: "#bbf7d0", swatch: ["#07170e", "#00c805"] },
+  spring: { label: "Spring", sky: ["#DCEFD9", "#F7F3DE"], hill: "#8DBF7A", trees: ["#3E7D4F", "#2E5A43", "#5C9A5E"], ink: "#1C2A23", accent: "#B23A3A", shape: "pine" },
+  autumn: { label: "Autumn", sky: ["#F6DEC0", "#FBF1E2"], hill: "#C98B4B", trees: ["#B4492E", "#D1832F", "#8E3B26"], ink: "#3A1F14", accent: "#2E5A43", shape: "round" },
+  birch:  { label: "Birch",  sky: ["#EEF1EC", "#FFFFFF"], hill: "#D7DED2", trees: ["#F6F6F2", "#E9ECE5", "#FFFFFF"], ink: "#1C2A23", accent: "#C29A2A", shape: "birch" },
+  winter: { label: "Winter", sky: ["#CFE0EA", "#F3F7FA"], hill: "#FFFFFF", trees: ["#2C4F5E", "#3E6B6B", "#1F3B47"], ink: "#16303A", accent: "#B23A3A", shape: "pine" },
+  night:  { label: "Night",  sky: ["#1B2A3A", "#30465A"], hill: "#1E3A2E", trees: ["#0F2219", "#173326", "#0B1A13"], ink: "#F4EFD9", accent: "#E7C65A", shape: "pine" },
+};
+
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function wrap(text, max, lines) {
+  const out = []; let cur = "";
+  for (const w of text.split(/\s+/).filter(Boolean)) {
+    if ((cur + " " + w).trim().length > max) { out.push(cur.trim()); cur = w; } else cur += " " + w;
+    if (out.length === lines) break;
+  }
+  if (out.length < lines && cur.trim()) out.push(cur.trim());
+  return out.slice(0, lines);
+}
+const r1 = (n) => Math.round(n * 10) / 10;
+
+function tree(shape, x, base, h, color, rnd) {
+  const w = h * (0.42 + rnd() * 0.12);
+  if (shape === "round") {
+    const r = w * 0.62;
+    return `<rect x="${r1(x - 2)}" y="${r1(base - h * 0.45)}" width="4" height="${r1(h * 0.45)}" fill="#5B3A26"/><circle cx="${r1(x)}" cy="${r1(base - h * 0.62)}" r="${r1(r)}" fill="${color}"/>`;
+  }
+  if (shape === "birch") {
+    const tw = 5 + rnd() * 4; let marks = "";
+    for (let i = 0; i < 4; i++) marks += `<rect x="${r1(x - tw / 2)}" y="${r1(base - h * (0.15 + i * 0.2) - rnd() * 8)}" width="${r1(tw * 0.6)}" height="2" fill="#2B2B2B"/>`;
+    return `<rect x="${r1(x - tw / 2)}" y="${r1(base - h)}" width="${r1(tw)}" height="${r1(h)}" fill="${color}" stroke="#B9C0B3" stroke-width=".6"/>${marks}`;
+  }
+  const t = base - h;
+  return `<path d="M${r1(x)} ${r1(t)}l${r1(w / 2)} ${r1(h * 0.55)}h${r1(-w * 0.18)}l${r1(w * 0.26)} ${r1(h * 0.45)}h${r1(-w * 1.16)}l${r1(w * 0.26)} ${r1(-h * 0.45)}h${r1(-w * 0.18)}z" fill="${color}"/>`;
+}
+
+
+function certSVG(T, { to = "", from = "", msg = "", contents = "", seed = 1 }) {
+  const serial = String((hashStr(`${to}|${from}|${msg}`) ^ (seed * 2654435761)) >>> 0).padStart(10, "0").slice(-6);
+  const ml = wrap(msg || "A little something to grow.", 52, 2);
+  const lines = ml.map((l, i) => `<tspan x="300" dy="${i ? 19 : 0}">${i === 0 ? "\u201C" : ""}${esc(l)}${i === ml.length - 1 ? "\u201D" : ""}</tspan>`).join("");
+  const big = esc(contents || "A gift from the forest");
+  const bigSize = big.length > 30 ? 22 : big.length > 20 ? 28 : 34;
+  const pine = (x) => `<path transform="translate(${x} 51) scale(.5)" d="M20 3 9 18h6L7 28h10v8h6v-8h10l-8-10h6z" fill="${T.line}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380"><defs>`
+    + `<radialGradient id="bg" cx="50%" cy="10%" r="95%"><stop offset="0" stop-color="${T.bg[0]}"/><stop offset=".6" stop-color="${T.bg[1]}"/><stop offset="1" stop-color="${T.bg[2]}"/></radialGradient>`
+    + `<linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${T.gold[0]}"/><stop offset=".4" stop-color="${T.gold[1]}"/><stop offset=".6" stop-color="${T.gold[2]}"/><stop offset="1" stop-color="${T.gold[3]}"/></linearGradient>`
+    + `<pattern id="g" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="1" fill="${T.line}" opacity=".16"/></pattern>`
+    + `<radialGradient id="seal" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="${T.gold[0]}"/><stop offset=".45" stop-color="${T.gold[1]}"/><stop offset="1" stop-color="${T.gold[3]}"/></radialGradient>`
+    + `</defs>`
+    + `<rect width="600" height="380" fill="url(#bg)"/><rect width="600" height="380" fill="url(#g)"/>`
+    + `<rect x="12" y="12" width="576" height="356" rx="14" fill="none" stroke="${T.line}" stroke-width="2.5"/>`
+    + `<rect x="19" y="19" width="562" height="342" rx="10" fill="none" stroke="${T.line}" stroke-opacity=".45" stroke-width="1"/>`
+    + `<g font-family="'JetBrains Mono',ui-monospace,monospace" font-size="9" letter-spacing="2" fill="${T.muted}" opacity=".85"><text x="36" y="44">GIFT CERTIFICATE</text><text x="564" y="44" text-anchor="end">No. ${serial}</text></g>`
+    + pine(86) + pine(494)
+    + `<text x="300" y="70" text-anchor="middle" font-family="Cinzel,Georgia,serif" font-weight="700" font-size="24" letter-spacing="4" fill="url(#foil)">SHAREWOOD FOREST</text>`
+    + `<line x1="60" y1="88" x2="540" y2="88" stroke="${T.line}" stroke-opacity=".4"/>`
+    + `<text x="300" y="118" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9.5" letter-spacing="2.5" fill="${T.muted}">THIS GIFT HOLDS</text>`
+    + `<text x="300" y="${118 + 18 + bigSize}" text-anchor="middle" font-family="'JetBrains Mono',ui-monospace,monospace" font-weight="700" font-size="${bigSize}" fill="url(#foil)">${big}</text>`
+    + `<rect x="70" y="196" width="460" height="104" rx="14" fill="#000" fill-opacity=".32" stroke="${T.line}" stroke-opacity=".22"/>`
+    + `<text x="300" y="218" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="8.5" letter-spacing="2" fill="${T.muted}" opacity=".8">PRESENTED TO</text>`
+    + `<text x="300" y="246" text-anchor="middle" font-family="Newsreader,Georgia,serif" font-style="italic" font-weight="600" font-size="24" fill="${T.ink}">${esc(to || "Someone special")}</text>`
+    + `<text x="300" y="270" text-anchor="middle" font-family="Newsreader,Georgia,serif" font-style="italic" font-size="14" fill="${T.muted}">${lines}</text>`
+    + `<line x1="60" y1="318" x2="540" y2="318" stroke="${T.line}" stroke-opacity=".4"/>`
+    + `<text x="36" y="344" font-family="'JetBrains Mono',monospace" font-size="10" fill="${T.muted}">FROM <tspan font-weight="700" fill="${T.ink}">${esc((from || "A friend").toUpperCase())}</tspan></text>`
+    + `<g transform="translate(540 322)"><circle r="26" fill="url(#seal)" stroke="${T.gold[0]}" stroke-opacity=".7" stroke-width="1.5"/><path transform="translate(-10 -12) scale(.5)" d="M20 3 9 18h6L7 28h10v8h6v-8h10l-8-10h6z" fill="#1a1405" fill-opacity=".85"/><text y="16" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="5.5" font-weight="700" letter-spacing="1" fill="#1a1405">SEALED</text></g>`
+    + `</svg>`;
+}
+
+function cardSVG(opts) {
+  const { theme = "emerald", to = "", from = "", msg = "", seed = 1 } = opts;
+  const T = THEMES[theme] || THEMES.emerald;
+  if (T.cert) return certSVG(T, opts);
+  const rnd = rng(hashStr(`${to}|${from}|${msg}|${theme}`) ^ seed);
+  let forest = "";
+  for (let layer = 0; layer < 2; layer++) {
+    const n = 7 + Math.floor(rnd() * 5);
+    for (let i = 0; i < n; i++) {
+      const x = 310 + rnd() * 255, base = 330 + layer * 22 + rnd() * 10;
+      const h = (layer ? 120 : 80) + rnd() * (layer ? 90 : 60);
+      forest += tree(T.shape, x, base, h, T.trees[Math.floor(rnd() * T.trees.length)], rnd);
+    }
+  }
+  let sky = "";
+  if (theme === "night") for (let i = 0; i < 26; i++) sky += `<circle cx="${r1(rnd() * 600)}" cy="${r1(rnd() * 200)}" r="${r1(0.6 + rnd() * 1.2)}" fill="#F4EFD9" opacity=".8"/>`;
+  if (theme === "winter") for (let i = 0; i < 30; i++) sky += `<circle cx="${r1(rnd() * 600)}" cy="${r1(rnd() * 380)}" r="${r1(1 + rnd() * 2)}" fill="#fff" opacity=".9"/>`;
+  const sun = theme === "night" ? `<circle cx="520" cy="70" r="26" fill="${T.accent}"/>` : `<circle cx="${r1(430 + rnd() * 120)}" cy="${r1(60 + rnd() * 30)}" r="30" fill="${T.accent}" opacity=".85"/>`;
+  const lines = wrap(msg || "A little something to grow.", 24, 3).map((l, i) => `<tspan x="40" dy="${i ? 28 : 0}">${esc(l)}</tspan>`).join("");
+  const hillY = 300 + rnd() * 20;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.sky[0]}"/><stop offset="1" stop-color="${T.sky[1]}"/></linearGradient></defs><rect width="600" height="380" fill="url(#s)"/>${sky}${sun}<path d="M0 ${r1(hillY + 30)}Q200 ${r1(hillY - 10)} 360 ${r1(hillY + 10)}T600 ${r1(hillY - 6)}V380H0z" fill="${T.hill}"/>${forest}<rect y="352" width="600" height="28" fill="${T.hill}"/><g fill="${T.ink}" font-family="Georgia,'Times New Roman',serif"><text x="40" y="78" font-size="38">For ${esc(to || "you")}</text><text x="40" y="132" font-size="21" opacity=".88">${lines}</text><text x="40" y="250" font-size="17" opacity=".75">From ${esc(from || "a friend")}</text></g><text x="40" y="350" font-family="Georgia,serif" font-size="13" fill="${T.ink}" opacity=".6">Sharewood Forest</text></svg>`;
+}
+
+function b64(str) { return btoa(String.fromCharCode(...new TextEncoder().encode(str))); }
+function cardURI(opts) {
+  const svg = cardSVG(opts);
+  const meta = {
+    name: `Sharewood gift for ${opts.to || "a friend"}`,
+    description: opts.msg || "A gift from the Sharewood Forest.",
+    image: "data:image/svg+xml;base64," + b64(svg),
+    attributes: [{ trait_type: "Style", value: THEMES[opts.theme].label }, ...(opts.contents ? [{ trait_type: "Holds", value: opts.contents }] : [])],
+  };
+  return "data:application/json;base64," + b64(JSON.stringify(meta));
+}
+function imageFromURI(uri) {
+  try {
+    const json = uri.startsWith("data:application/json;base64,")
+      ? JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(uri.split(",")[1]), (c) => c.charCodeAt(0))))
+      : null;
+    return json && json.image ? json.image : null;
+  } catch { return null; }
+}
+
+/* ======================= Wallet ======================= */
+let browserProvider = null, signer = null, account = null;
+
+async function connect() {
+  if (!window.ethereum) { throw new Error("No wallet found. Install a wallet like MetaMask, Rabby or Coinbase Wallet, or open this page in your wallet's browser."); }
+  browserProvider = new ethers.BrowserProvider(window.ethereum);
+  await browserProvider.send("eth_requestAccounts", []);
+  signer = await browserProvider.getSigner();
+  account = await signer.getAddress();
+  $("addr").textContent = account.slice(0, 6) + "…" + account.slice(-4);
+  $("connectBtn").textContent = "Connected";
+  $("connectBtn").disabled = true;
+  return account;
+}
+
+async function ensureChain(key) {
+  const c = CHAINS[key];
+  const hex = "0x" + c.id.toString(16);
+  const current = await browserProvider.send("eth_chainId", []);
+  if (current.toLowerCase() === hex) return;
+  try {
+    await browserProvider.send("wallet_switchEthereumChain", [{ chainId: hex }]);
+  } catch (e) {
+    const code = e.code ?? e.error?.code ?? e.info?.error?.code;
+    if (code !== 4902 || !c.rpc) throw new Error(`Switch your wallet to ${c.name} and try again.`);
+    await browserProvider.send("wallet_addEthereumChain", [{
+      chainId: hex, chainName: c.name, rpcUrls: [c.rpc],
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      blockExplorerUrls: c.explorer ? [c.explorer] : [],
+    }]);
+  }
+  browserProvider = new ethers.BrowserProvider(window.ethereum);
+  signer = await browserProvider.getSigner();
+}
+
+const giftsIface = new ethers.Interface(GIFTS_ABI);
+function friendlyError(e) {
+  const data = e?.data || e?.info?.error?.data || e?.error?.data;
+  if (data) {
+    try {
+      const name = giftsIface.parseError(data)?.name;
+      const map = {
+        BadSignature: "This link doesn't match the gift. Check you copied the whole link.",
+        NotOpen: "This gift has already been opened or returned.",
+        Expired: "This gift expired before it was opened. The sender can take it back.",
+        NotExpired: "This gift hasn't expired yet. You can take it back after it expires.",
+        NotSender: "Only the person who sent this gift can take it back.",
+        BadInput: "Something in the gift is missing or invalid. Check the amounts and token addresses.",
+      };
+      if (map[name]) return map[name];
+    } catch {}
+  }
+  if (e?.code === "ACTION_REJECTED" || e?.code === 4001) return "You cancelled the request in your wallet.";
+  if (e?.code === "INSUFFICIENT_FUNDS") return "Your wallet doesn't have enough ETH to cover this and the network fee.";
+  return e?.shortMessage || e?.reason || e?.message || String(e);
+}
+function setStatus(el, kind, text) { el.className = `status show ${kind}`; el.textContent = text; }
+
+/* ======================= Send view ======================= */
+let theme = "emerald", seed = 1;
+
+function renderThemes() {
+  $("themes").innerHTML = Object.entries(THEMES).map(([k, t]) =>
+    `<button type="button" class="theme" data-theme="${k}" aria-pressed="${k === theme}"><i style="background:linear-gradient(135deg,${t.cert ? t.swatch[0] : t.sky[0]},${t.cert ? t.swatch[1] : t.trees[0]})"></i>${t.label}</button>`).join("");
+}
+function giftContents() {
+  const parts = [];
+  for (const row of $("tokenRows").children) {
+    const amt = row.querySelector(".tok-amt").value;
+    if (row.dataset.symbol && amt && Number(amt) > 0) parts.push(`${amt} ${row.dataset.symbol}`);
+  }
+  const eth = $("ethAmt").value;
+  if (eth && Number(eth) > 0) parts.push(`${eth} ETH`);
+  return parts.length > 2 ? `${parts.slice(0, 2).join(" + ")} + more` : parts.join(" + ");
+}
+function cardOpts() { return { theme, seed, to: $("toName").value.trim(), from: $("fromName").value.trim(), msg: $("msg").value.trim(), contents: giftContents() }; }
+function renderPreview() { $("preview").innerHTML = cardSVG(cardOpts()); }
+
+function addTokenRow(addr = "", amt = "") {
+  const rows = $("tokenRows");
+  if (rows.children.length >= MAX_TOKENS) return;
+  const row = document.createElement("div");
+  row.className = "token-row";
+  row.innerHTML = `<input class="tok-addr" placeholder="0x… token address" aria-label="Token address" value="${esc(addr)}"><input class="tok-amt" type="number" min="0" step="any" placeholder="Amount" aria-label="Amount" inputmode="decimal" value="${esc(amt)}"><button class="icon-btn" type="button" aria-label="Remove token">×</button><div class="sym"></div>`;
+  row.querySelector("button").onclick = () => { row.remove(); updateAddBtn(); renderSummary(); };
+  row.querySelector(".tok-addr").addEventListener("change", () => lookupToken(row));
+  row.querySelector(".tok-amt").addEventListener("input", renderSummary);
+  rows.appendChild(row);
+  updateAddBtn();
+}
+function updateAddBtn() { $("addTokenBtn").hidden = $("tokenRows").children.length >= MAX_TOKENS; }
+
+async function lookupToken(row) {
+  const addr = row.querySelector(".tok-addr").value.trim(), out = row.querySelector(".sym");
+  row.dataset.symbol = ""; row.dataset.decimals = "";
+  if (!addr) { out.textContent = ""; return; }
+  if (!ethers.isAddress(addr)) { out.textContent = "That isn't a valid address."; return; }
+  const c = CHAINS[$("chainSel").value];
+  if (!c.rpc) { out.textContent = "Set an RPC for this network in the config to look up tokens."; return; }
+  out.textContent = "Looking up token…";
+  try {
+    const t = new ethers.Contract(addr, ERC20_ABI, new ethers.JsonRpcProvider(c.rpc, c.id, { staticNetwork: true }));
+    const [sym, dec] = await Promise.all([t.symbol(), t.decimals()]);
+    row.dataset.symbol = sym; row.dataset.decimals = String(dec);
+    out.textContent = `${sym} on ${c.name}`;
+  } catch { out.textContent = `No token found at this address on ${c.name}.`; }
+  renderSummary();
+}
+
+let currentFee = null;
+async function loadFee() {
+  currentFee = null;
+  const c = CHAINS[$("chainSel").value];
+  if (!c.gifts || !c.rpc) { renderSummary(); return; }
+  try {
+    const g = new ethers.Contract(c.gifts, GIFTS_ABI, new ethers.JsonRpcProvider(c.rpc, c.id, { staticNetwork: true }));
+    currentFee = await g.fee();
+  } catch {}
+  renderSummary();
+}
+
+function renderSummary() {
+  if (typeof renderPreview === "function" && $("preview")) renderPreview();
+  const c = CHAINS[$("chainSel").value];
+  const lines = [];
+  const eth = parseFloat($("ethAmt").value || "0");
+  if (eth > 0) lines.push([`${eth} ETH`, "In the gift"]);
+  for (const row of $("tokenRows").children) {
+    const amt = row.querySelector(".tok-amt").value;
+    if (row.dataset.symbol && amt) lines.push([`${amt} ${row.dataset.symbol}`, "In the gift"]);
+  }
+  if ($("coverGas").checked) lines.push([`${ethers.formatEther(gasTipFor($("chainSel").value))} ETH`, "Their network fee"]);
+  if (currentFee !== null) lines.push([`${ethers.formatEther(currentFee)} ETH`, "Sharewood fee"]);
+  let html = lines.map(([a, b]) => `<div class="summary"><span>${esc(b)}</span><b>${esc(a)}</b></div>`).join("");
+  if (!c.gifts) html += `<div class="status show info">Sharewood isn't live on ${esc(c.name)} yet.</div>`;
+  $("summary").innerHTML = html;
+  $("sendBtn").disabled = !c.gifts;
+}
+
+async function sendGift() {
+  const st = $("sendStatus"), key = $("chainSel").value, c = CHAINS[key];
+  $("shareBox").classList.remove("show");
+  try {
+    if (!account) await connect();
+    await ensureChain(key);
+
+    const ethAmt = $("ethAmt").value ? ethers.parseEther($("ethAmt").value) : 0n;
+    const tokens = [], amounts = [];
+    for (const row of $("tokenRows").children) {
+      const addr = row.querySelector(".tok-addr").value.trim(), amt = row.querySelector(".tok-amt").value;
+      if (!addr && !amt) continue;
+      if (!row.dataset.decimals) throw new Error("One of the tokens couldn't be found. Check the address or remove it.");
+      if (!amt || Number(amt) <= 0) throw new Error(`Enter an amount for ${row.dataset.symbol}.`);
+      tokens.push(addr); amounts.push(ethers.parseUnits(amt, Number(row.dataset.decimals)));
+    }
+    if (ethAmt === 0n && tokens.length === 0) throw new Error("Add some ETH or a token to the gift.");
+
+    const gifts = new ethers.Contract(c.gifts, GIFTS_ABI, signer);
+    const fee = await gifts.fee();
+
+    for (let i = 0; i < tokens.length; i++) {
+      const t = new ethers.Contract(tokens[i], ERC20_ABI, signer);
+      const allowance = await t.allowance(account, c.gifts);
+      if (allowance < amounts[i]) {
+        const sym = $("tokenRows").children[i]?.dataset.symbol || "token";
+        setStatus(st, "info", `Approve ${sym} in your wallet (${i + 1} of ${tokens.length}).`);
+        await (await t.approve(c.gifts, amounts[i])).wait();
+      }
+    }
+
+    const claimKey = ethers.Wallet.createRandom();
+    const opts = cardOpts();
+    const days = Number($("expiry").value);
+    setStatus(st, "info", "Confirm the gift in your wallet.");
+    const tip = $("coverGas").checked ? gasTipFor(key) : 0n;
+    const tx = await gifts.createGift(tokens, amounts, claimKey.address, days * 86400, tip, cardURI(opts), { value: fee + tip + ethAmt });
+    setStatus(st, "info", "Sealing your gift…");
+    const rc = await tx.wait();
+
+    let giftId = null;
+    for (const log of rc.logs) {
+      try { const p = gifts.interface.parseLog(log); if (p?.name === "GiftCreated") giftId = p.args.giftId.toString(); } catch {}
+    }
+    if (!giftId) throw new Error("The gift was sent but its number couldn't be read. Check the transaction in the explorer.");
+
+    const link = `${location.origin}${location.pathname}#claim/${key}/${giftId}/${claimKey.privateKey.slice(2)}`;
+    $("shareLink").value = link;
+    $("shareBox").classList.add("show");
+    setStatus(st, "ok", "Gift sealed.");
+    saveSent({ key, giftId, link, to: opts.to, at: Date.now(), expires: Date.now() + days * 86400000 });
+    renderSent();
+  } catch (e) {
+    setStatus(st, "error", friendlyError(e));
+  }
+}
+
+/* Sent gifts (kept in this browser only) */
+function loadSent() { try { return JSON.parse(localStorage.getItem("sharewood:sent") || "[]"); } catch { return []; } }
+function saveSent(g) { try { const all = loadSent(); all.unshift(g); localStorage.setItem("sharewood:sent", JSON.stringify(all.slice(0, 50))); } catch {} }
+function renderSent() {
+  const all = loadSent();
+  $("sentSection").hidden = all.length === 0;
+  $("sentList").innerHTML = all.map((g, i) => {
+    const expired = Date.now() > g.expires;
+    return `<div class="sent-item"><span>For ${esc(g.to || "a friend")} on ${esc(CHAINS[g.key]?.name || g.key)}, gift #${esc(g.giftId)}</span><span style="display:flex;gap:8px"><button class="btn ghost small" data-copy="${i}">Copy link</button>${expired ? `<button class="btn small" data-refund="${i}">Take it back</button>` : ""}</span></div>`;
+  }).join("");
+}
+async function refundGift(g, btn) {
+  try {
+    btn.disabled = true;
+    if (!account) await connect();
+    await ensureChain(g.key);
+    const gifts = new ethers.Contract(CHAINS[g.key].gifts, GIFTS_ABI, signer);
+    await (await gifts.refund(g.giftId)).wait();
+    btn.textContent = "Returned";
+  } catch (e) { alert(friendlyError(e)); btn.disabled = false; }
+}
+
+/* ======================= Claim view ======================= */
+let claimCtx = null;
+
+async function showClaim(key, giftId, keyHex) {
+  $("sendView").hidden = true; $("claimView").hidden = false;
+  const c = CHAINS[key], st = $("claimStatus");
+  try {
+    if (!c || !c.gifts || !c.rpc) throw new Error("This gift link points to a network Sharewood doesn't support.");
+    const claimKey = new ethers.Wallet("0x" + keyHex);
+    const provider = new ethers.JsonRpcProvider(c.rpc, c.id, { staticNetwork: true });
+    const gifts = new ethers.Contract(c.gifts, GIFTS_ABI, provider);
+    const g = await gifts.getGift(giftId);
+    if (Number(g.status) === 0) throw new Error("This gift doesn't exist. Check you copied the whole link.");
+    if (g.claimSigner.toLowerCase() !== claimKey.address.toLowerCase()) throw new Error("This link doesn't match the gift. Check you copied the whole link.");
+
+    const img = imageFromURI(g.cardURI);
+    $("claimCard").innerHTML = img ? `<img alt="Gift card" src="${esc(img)}">` : "";
+
+    const items = [];
+    if (g.ethAmount > 0n) items.push(["ETH", ethers.formatEther(g.ethAmount)]);
+    for (let i = 0; i < g.tokens.length; i++) {
+      const t = new ethers.Contract(g.tokens[i], ERC20_ABI, provider);
+      let sym = g.tokens[i].slice(0, 8) + "…", dec = 18;
+      try { [sym, dec] = await Promise.all([t.symbol(), t.decimals()]); } catch {}
+      items.push([sym, ethers.formatUnits(g.amounts[i], dec)]);
+    }
+    $("claimItems").innerHTML = items.map(([s, a]) => `<div class="item"><span>${esc(s)}</span><b>${esc(a)}</b></div>`).join("");
+    $("claimContents").hidden = false;
+
+    const status = Number(g.status), expired = Date.now() / 1000 >= Number(g.expiresAt);
+    const until = new Date(Number(g.expiresAt) * 1000).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+    if (status === 2) { $("claimTitle").textContent = "This gift has been opened."; $("claimLead").textContent = "The card and everything inside went to the wallet that opened it."; return; }
+    if (status === 3) { $("claimTitle").textContent = "This gift was returned."; $("claimLead").textContent = "It wasn't opened in time, so it went back to the sender."; return; }
+    if (expired) { $("claimTitle").textContent = "This gift has expired."; $("claimLead").textContent = "The sender can take it back. Ask them to send a new one."; return; }
+
+    $("claimTitle").textContent = "Someone sent you a gift.";
+    $("claimLead").textContent = `Open it on ${c.name} by ${until}. Everything inside, and the card, will go to your wallet.`;
+    $("claimBtn").hidden = false;
+    $("claimGasNote").hidden = false;
+    const tipped = g.gasTip > 0n;
+    $("claimGasNote").textContent = RELAYER_URL
+      ? (tipped ? "The sender covered the network fee. Opening is free." : "Opening is free. You won't pay a network fee.")
+      : tipped
+        ? `You'll need a little ETH on ${c.name} for the network fee. The sender added ${ethers.formatEther(g.gasTip)} ETH to pay you back.`
+        : `You'll need a little ETH on ${c.name} to pay the network fee.`;
+    claimCtx = { key, giftId, claimKey, c };
+  } catch (e) {
+    $("claimTitle").textContent = "This gift can't be opened.";
+    setStatus(st, "error", friendlyError(e));
+  }
+}
+
+async function claimGift() {
+  const st = $("claimStatus"), { key, giftId, claimKey, c } = claimCtx;
+  try {
+    $("claimBtn").disabled = true;
+    if (!account) await connect();
+    await ensureChain(key);
+    const gifts = new ethers.Contract(c.gifts, GIFTS_ABI, signer);
+    const inner = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
+      ["uint256", "address", "uint256", "address"], [c.id, c.gifts, giftId, account]));
+    const sig = await claimKey.signMessage(ethers.getBytes(inner));
+
+    // Sponsored opening: the relayer pays the network fee. Falls back to the wallet if unavailable.
+    if (RELAYER_URL) {
+      setStatus(st, "info", "Opening your gift…");
+      let res = null;
+      try {
+        const r = await fetch(RELAYER_URL.replace(/\/$/, "") + "/claim", {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ chain: key, giftId: String(giftId), recipient: account, signature: sig }),
+        });
+        res = { status: r.status, body: await r.json().catch(() => ({})) };
+      } catch {}
+      if (res && res.status === 200 && res.body.txHash) {
+        const provider = new ethers.JsonRpcProvider(c.rpc, c.id, { staticNetwork: true });
+        const rc = await provider.waitForTransaction(res.body.txHash, 1, 120000);
+        if (rc && rc.status === 1) { claimDone(); return; }
+      } else if (res) {
+        const msgs = {
+          BadSignature: "This link doesn't match the gift. Check you copied the whole link.",
+          NotOpen: "This gift has already been opened or returned.",
+          Expired: "This gift expired before it was opened. The sender can take it back.",
+          BadInput: "This gift can't be opened to that wallet address.",
+        };
+        if (msgs[res.body.code]) throw new Error(msgs[res.body.code]);
+      }
+      // Anything else (relayer down, out of funds, fees spiking, blocked token): use the wallet path.
+    }
+
+    setStatus(st, "info", "Checking the gift can go to your wallet…");
+    try {
+      await gifts.claim.staticCall(giftId, account, sig);
+    } catch (e) {
+      const known = friendlyError(e);
+      if (known.includes("link") || known.includes("opened") || known.includes("expired")) throw e;
+      throw new Error("Your wallet can't receive one of the tokens in this gift. Some stock tokens can only go to approved wallets. Check with the token's issuer, or ask the sender to take it back after it expires and resend without it.");
+    }
+
+    setStatus(st, "info", "Confirm in your wallet to open your gift.");
+    const tx = await gifts.claim(giftId, account, sig);
+    setStatus(st, "info", "Opening…");
+    await tx.wait();
+    claimDone();
+  } catch (e) {
+    setStatus(st, "error", friendlyError(e));
+    $("claimBtn").disabled = false;
+  }
+}
+
+function claimDone() {
+  $("claimTitle").textContent = "It's yours.";
+  $("claimLead").textContent = "The tokens and your gift card are now in your wallet.";
+  $("claimBtn").hidden = true; $("claimGasNote").hidden = true;
+  setStatus($("claimStatus"), "ok", "Gift opened.");
+}
+
+/* ======================= Routing + wiring ======================= */
+function route() {
+  const m = location.hash.match(/^#claim\/([A-Za-z]+)\/(\d+)\/([0-9a-fA-F]{64})$/);
+  if (m) { showClaim(m[1], m[2], m[3]); return; }
+  $("claimView").hidden = true; $("sendView").hidden = false;
+}
+
+function init() {
+  $("chainSel").innerHTML = Object.entries(CHAINS).map(([k, c]) => `<option value="${k}">${esc(c.name)}</option>`).join("");
+  // Start on the first network that's live, so testers land somewhere usable.
+  const firstLive = Object.keys(CHAINS).find((k) => CHAINS[k].gifts);
+  if (firstLive) $("chainSel").value = firstLive;
+  renderThemes(); addTokenRow(); renderPreview(); renderSent(); loadFee();
+
+  $("themes").addEventListener("click", (e) => {
+    const b = e.target.closest(".theme"); if (!b) return;
+    theme = b.dataset.theme; renderThemes(); renderPreview();
+  });
+  ["toName", "fromName", "msg"].forEach((id) => $(id).addEventListener("input", renderPreview));
+  $("shuffleBtn").onclick = () => { seed = (seed * 48271) % 2147483647; renderPreview(); };
+  $("addTokenBtn").onclick = () => addTokenRow();
+  $("ethAmt").addEventListener("input", () => { renderSummary(); renderPreview(); });
+  $("coverGas").addEventListener("change", renderSummary);
+  $("chainSel").addEventListener("change", () => { for (const r of $("tokenRows").children) lookupToken(r); loadFee(); });
+  $("sendBtn").onclick = sendGift;
+  $("claimBtn").onclick = claimGift;
+  $("connectBtn").onclick = () => connect().catch((e) => alert(friendlyError(e)));
+  $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText($("shareLink").value); $("copyBtn").textContent = "Copied"; } catch { $("shareLink").select(); } };
+  if (navigator.share) {
+    $("nativeShareBtn").hidden = false;
+    $("nativeShareBtn").onclick = () => navigator.share({ title: "A gift for you", text: "Someone sent you a gift on Sharewood Forest.", url: $("shareLink").value }).catch(() => {});
+  }
+  $("sentList").addEventListener("click", (e) => {
+    const all = loadSent();
+    const c = e.target.closest("[data-copy]"), r = e.target.closest("[data-refund]");
+    if (c) navigator.clipboard?.writeText(all[c.dataset.copy].link).then(() => (c.textContent = "Copied"));
+    if (r) refundGift(all[r.dataset.refund], r);
+  });
+  window.addEventListener("hashchange", route);
+  route();
+}
+init();
+</script>
 </body>
 </html>

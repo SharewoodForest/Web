@@ -1,0 +1,14 @@
+{
+  "name": "Sharewood Forest",
+  "short_name": "Sharewood",
+  "description": "Gift tokens and tokenized stocks with a link.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06110b",
+  "theme_color": "#06110b",
+  "icons": [
+    { "src": "/assets/foxley-touch.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/assets/foxley-crest.jpg", "sizes": "256x256", "type": "image/jpeg" }
+  ]
+}

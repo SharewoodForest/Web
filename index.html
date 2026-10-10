@@ -3,21 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sharewood Forest · Send a gift</title>
-<meta name="description" content="Wrap tokens and stock tokens in a gift card and send them as a link.">
-<link rel="icon" type="image/png" href="data:image/png;base64,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">
-<link rel="apple-touch-icon" href="https://sharewoodforest.app/assets/foxley-touch.png">
+<title>Sharewood Forest · Gift tokens and tokenized stocks with a link</title>
+<meta name="description" content="Send tokens, tokenized stocks or ETH as a gift link. Held by a smart contract, opened with any wallet, and returned to you if unopened. Built for Robinhood Chain, Base and Arbitrum.">
+<link rel="canonical" href="https://sharewoodforest.app/">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#06110b">
+<meta name="color-scheme" content="dark">
+<meta name="application-name" content="Sharewood Forest">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="180x180" href="/assets/foxley-touch.png">
+<link rel="apple-touch-icon" href="/assets/foxley-touch.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Sharewood Forest">
+<meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://sharewoodforest.app/">
 <meta property="og:title" content="Sharewood Forest: give someone a piece of a company they love">
-<meta property="og:description" content="Pick a stock token or token, write a note, and send a gift link. They open it with any wallet.">
+<meta property="og:description" content="Pick a token or stock token, write a note, and send a gift link. They open it with any wallet. Unopened gifts go back to you.">
 <meta property="og:image" content="https://sharewoodforest.app/assets/foxley-og.jpg">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="572">
+<meta property="og:image:alt" content="Foxley, the fox mascot of Sharewood Forest, holding a gift certificate">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sharewood Forest: give someone a piece of a company they love">
+<meta name="twitter:description" content="Pick a token or stock token, write a note, and send a gift link. They open it with any wallet. Unopened gifts go back to you.">
 <meta name="twitter:image" content="https://sharewoodforest.app/assets/foxley-og.jpg">
+<meta name="twitter:image:alt" content="Foxley, the fox mascot of Sharewood Forest, holding a gift certificate">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://sharewoodforest.app/#org",
+      "name": "Sharewood Forest",
+      "url": "https://sharewoodforest.app/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://sharewoodforest.app/assets/foxley-crest.jpg",
+        "width": 256,
+        "height": 256
+      },
+      "email": "hello@sharewoodforest.app",
+      "sameAs": [
+        "https://github.com/SharewoodForest"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://sharewoodforest.app/#website",
+      "url": "https://sharewoodforest.app/",
+      "name": "Sharewood Forest",
+      "description": "Send tokens, tokenized stocks or ETH as a gift link. Held by a smart contract, opened with any wallet, and returned to you if unopened. Built for Robinhood Chain, Base and Arbitrum.",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://sharewoodforest.app/#org"
+      }
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://sharewoodforest.app/#app",
+      "name": "Sharewood Forest",
+      "url": "https://sharewoodforest.app/",
+      "description": "Send tokens, tokenized stocks or ETH as a gift link. Held by a smart contract, opened with any wallet, and returned to you if unopened. Built for Robinhood Chain, Base and Arbitrum.",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any modern web browser",
+      "browserRequirements": "Requires JavaScript and an Ethereum-compatible wallet",
+      "image": "https://sharewoodforest.app/assets/foxley-og.jpg",
+      "publisher": {
+        "@id": "https://sharewoodforest.app/#org"
+      },
+      "isPartOf": {
+        "@id": "https://sharewoodforest.app/#website"
+      },
+      "featureList": [
+        "Gift tokens, tokenized stocks and ETH with a shareable link",
+        "Gifts held by a smart contract until opened",
+        "Unopened gifts can be taken back after they expire",
+        "Recipients open gifts with any wallet",
+        "No seed phrase or recipient address needed"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://sharewoodforest.app/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Sharewood Forest?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sharewood Forest is a web app for giving tokens, tokenized stocks and ETH as a gift. You choose what to give, write a short dedication, and seal it into a smart contract. You get a private link to send to the person it's for."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the person open their gift?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They open the link, connect any Ethereum-compatible wallet and tap Open gift. The contents and a keepsake gift certificate go to their wallet. If the sender covered the network fee, opening is free for them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to copy or paste any wallet details?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. You connect your wallet and approve each step inside your wallet app. Sharewood Forest never asks for your seed phrase or wallet private key, and you don't paste a recipient address. An optional advanced control lets you add a token by its contract address if it isn't listed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens if a gift isn't opened?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Every gift has an expiry that you choose, from 7 days to 1 year. After it expires, the sender can take the gift back from the same page."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the gift link private?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The key that opens a gift sits after the # in the link, so browsers never send it to any server. Anyone who has the whole link can open the gift, so share it only with the person it's for."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which networks does it support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Robinhood Chain, Base and Arbitrum, plus test networks for trying it out. The network menu in the app shows what is live. The contract source is public at github.com/SharewoodForest/Contracts."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Sharewood Forest affiliated with Robinhood?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It is an independent app built on Robinhood Chain and is not affiliated with or endorsed by Robinhood. Stock tokens are not available everywhere, so check that gifting and receiving them is allowed where you and your recipient live. Nothing here is financial advice."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js" integrity="sha512-dj/EbePKIJrkhHMePgJ6ACP0v5whCZi+A8ot7WP+L0a3sPafqqWRiRhBBlGprs5hs5JjOYuTDlOic+qKc/s3mw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 :root{
   --canvas:#06110b; --panel:rgba(12,28,20,.88); --panel-2:#10261c; --field:#0b1d14;
@@ -224,6 +360,13 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
   .addr{display:none}
   .row{grid-template-columns:1fr}
 }
+.advanced{margin-top:12px;border-top:1px dashed var(--line-s);padding-top:10px}
+.advanced summary{cursor:pointer;color:var(--muted);font-size:.84rem}
+.advanced[open] summary{margin-bottom:6px}
+.about{max-width:860px;margin:56px auto 0;padding:0 clamp(16px,4vw,32px)}
+.about h2{font:700 clamp(1.4rem,3vw,2rem) var(--display);margin:0 0 18px}
+.about h3{font:700 1.05rem var(--sans);color:var(--gold-l);margin:22px 0 4px}
+.about p{margin:0;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -273,7 +416,11 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
             </div>
             <div id="tokenRows"></div>
           </div>
-          <button class="btn ghost small add-token" id="addTokenBtn" type="button" hidden>Other token (paste address)</button>
+          <details class="advanced" id="advToken">
+            <summary>Advanced: a token that isn't listed</summary>
+            <p class="fine">Most gifts only need the tiles above. If you need something else, you can add it by its contract address.</p>
+            <button class="btn ghost small add-token" id="addTokenBtn" type="button">Add by contract address</button>
+          </details>
           <p class="fine" style="margin-top:10px">Up to 5 tokens per gift, plus ETH.</p>
         </li>
 
@@ -362,6 +509,25 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
     <p class="fine" id="claimGasNote" hidden style="text-align:center;margin-top:10px"></p>
     <div class="status" id="claimStatus" role="status" aria-live="polite"></div>
   </section>
+<section class="about" id="faq" aria-labelledby="faqTitle">
+    <h2 id="faqTitle" class="foil">Questions, answered</h2>
+    <h3>What is Sharewood Forest?</h3>
+    <p>Sharewood Forest is a web app for giving tokens, tokenized stocks and ETH as a gift. You choose what to give, write a short dedication, and seal it into a smart contract. You get a private link to send to the person it&#x27;s for.</p>
+    <h3>How does the person open their gift?</h3>
+    <p>They open the link, connect any Ethereum-compatible wallet and tap Open gift. The contents and a keepsake gift certificate go to their wallet. If the sender covered the network fee, opening is free for them.</p>
+    <h3>Do I need to copy or paste any wallet details?</h3>
+    <p>No. You connect your wallet and approve each step inside your wallet app. Sharewood Forest never asks for your seed phrase or wallet private key, and you don&#x27;t paste a recipient address. An optional advanced control lets you add a token by its contract address if it isn&#x27;t listed.</p>
+    <h3>What happens if a gift isn&#x27;t opened?</h3>
+    <p>Every gift has an expiry that you choose, from 7 days to 1 year. After it expires, the sender can take the gift back from the same page.</p>
+    <h3>Is the gift link private?</h3>
+    <p>The key that opens a gift sits after the # in the link, so browsers never send it to any server. Anyone who has the whole link can open the gift, so share it only with the person it&#x27;s for.</p>
+    <h3>Which networks does it support?</h3>
+    <p>Robinhood Chain, Base and Arbitrum, plus test networks for trying it out. The network menu in the app shows what is live. The contract source is public at github.com/SharewoodForest/Contracts.</p>
+    <h3>Is Sharewood Forest affiliated with Robinhood?</h3>
+    <p>No. It is an independent app built on Robinhood Chain and is not affiliated with or endorsed by Robinhood. Stock tokens are not available everywhere, so check that gifting and receiving them is allowed where you and your recipient live. Nothing here is financial advice.</p>
+    <p style="margin-top:22px">Questions or security reports: <a href="mailto:hello@sharewoodforest.app">hello@sharewoodforest.app</a>. Source code: <a href="https://github.com/SharewoodForest" rel="noopener">github.com/SharewoodForest</a>.</p>
+  </section>
+  <noscript><p class="about">Sharewood Forest needs JavaScript and a wallet to wrap and open gifts. Nothing is sent or stored without your approval in your wallet.</p></noscript>
 </main>
 
 <footer>Sharewood Forest. Gifts are held by a smart contract until they're opened or returned. <button class="linkish" type="button" id="donateFooterBtn">Support the project</button></footer>
@@ -380,7 +546,11 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
   <input id="donateAmt" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00">
   <button class="btn big" id="donateSend" type="button" style="margin-top:16px">Connect wallet and donate</button>
   <div class="status" id="donateStatus" role="status" aria-live="polite"></div>
-  <p class="fine donate-to">Goes straight to the project wallet <button class="linkish" type="button" id="donateCopy"></button></p>
+  <p class="fine">Your wallet shows the full details before you confirm anything.</p>
+  <details class="advanced">
+    <summary>Prefer to send from another app?</summary>
+    <p class="fine donate-to">Project wallet: <button class="linkish" type="button" id="donateCopy"></button></p>
+  </details>
 </dialog>
 
 <script>
@@ -589,7 +759,33 @@ async function connect() {
   $("addr").textContent = account.slice(0, 6) + "…" + account.slice(-4);
   $("connectBtn").textContent = "Connected";
   $("connectBtn").disabled = true;
+  syncWalletLabels();
   return account;
+}
+
+function syncWalletLabels() {
+  $("donateSend").textContent = account ? "Donate" : "Connect wallet and donate";
+  $("claimBtn").textContent = account ? "Open gift" : "Connect wallet and open gift";
+}
+function resetWallet() {
+  browserProvider = null; signer = null; account = null;
+  $("addr").textContent = "";
+  $("connectBtn").textContent = "Connect wallet";
+  $("connectBtn").disabled = false;
+  syncWalletLabels();
+}
+/* Pick the wallet back up quietly if this site is already approved, and follow account changes. */
+async function watchWallet() {
+  const eth = window.ethereum;
+  if (!eth) return;
+  try {
+    const accts = await eth.request({ method: "eth_accounts" });
+    if (accts && accts.length) await connect();
+  } catch {}
+  if (eth.on) eth.on("accountsChanged", async (accts) => {
+    resetWallet();
+    if (accts && accts.length) { try { await connect(); } catch {} }
+  });
 }
 
 async function ensureChain(key) {
@@ -675,7 +871,7 @@ function addTokenRow(addr = "", amt = "", known = null) {
   updateAddBtn();
   return row;
 }
-function updateAddBtn() { $("addTokenBtn").hidden = true; }
+function updateAddBtn() { $("addTokenBtn").disabled = $("tokenRows").children.length >= MAX_TOKENS; }
 
 function renderPicker() {
   const key = $("chainSel").value;
@@ -688,7 +884,6 @@ function renderPicker() {
     const on = picked.has(t.address.toLowerCase());
     html += `<button type="button" class="tile" data-pick="${esc(t.address)}" aria-pressed="${on}" ${!on && full ? "disabled" : ""}>${logoImg(t.logo, t.symbol)}<span><span class="kind">${esc(t.kind)}</span><b>${esc(t.symbol)}</b><small>${esc(t.name)}</small></span></button>`;
   }
-  html += `<button type="button" class="tile other" data-pick="other" ${full ? "disabled" : ""}><span class="mono">+</span><b style="font-size:.8rem">Other token</b><small>Paste an address</small></button>`;
   $("picker").innerHTML = html;
 }
 function onPick(e) {
@@ -842,7 +1037,7 @@ async function refundGift(g, btn) {
 let claimCtx = null;
 
 async function showClaim(key, giftId, keyHex) {
-  $("sendView").hidden = true; $("claimView").hidden = false;
+  $("sendView").hidden = true; $("claimView").hidden = false; $("faq").hidden = true;
   const c = CHAINS[key], st = $("claimStatus");
   try {
     if (!c || !c.gifts || !c.rpc) throw new Error("This gift link points to a network Sharewood doesn't support.");
@@ -876,6 +1071,7 @@ async function showClaim(key, giftId, keyHex) {
     $("claimTitle").textContent = "Someone sent you a gift.";
     $("claimLead").textContent = `Open it on ${c.name} by ${until}. Everything inside, and the card, will go to your wallet.`;
     $("claimBtn").hidden = false;
+    syncWalletLabels();
     $("claimGasNote").hidden = false;
     const tipped = g.gasTip > 0n;
     $("claimGasNote").textContent = RELAYER_URL
@@ -971,6 +1167,7 @@ function openDonate() {
   $("donateCopy").textContent = DONATE_ADDRESS.slice(0, 8) + "…" + DONATE_ADDRESS.slice(-6);
   $("donateStatus").className = "status";
   $("donateSend").disabled = false;
+  syncWalletLabels();
   renderDonate();
   $("donateDlg").showModal();
 }
@@ -1011,6 +1208,7 @@ function route() {
   const m = location.hash.match(/^#claim\/([A-Za-z]+)\/(\d+)\/([0-9a-fA-F]{64})$/);
   if (m) { showClaim(m[1], m[2], m[3]); return; }
   $("claimView").hidden = true; $("sendView").hidden = false;
+  $("faq").hidden = false;
 }
 
 function init() {
@@ -1026,7 +1224,7 @@ function init() {
   });
   ["toName", "fromName", "msg"].forEach((id) => $(id).addEventListener("input", renderPreview));
   $("shuffleBtn").onclick = () => { seed = (seed * 48271) % 2147483647; renderPreview(); };
-  $("addTokenBtn").onclick = () => addTokenRow();
+  $("addTokenBtn").onclick = () => { const row = addTokenRow(); row && row.querySelector(".tok-addr").focus(); };
   $("ethAmt").addEventListener("input", () => { renderSummary(); renderPreview(); });
   $("coverGas").addEventListener("change", renderSummary);
   $("chainSel").addEventListener("change", () => {
@@ -1060,6 +1258,7 @@ function init() {
   });
   window.addEventListener("hashchange", route);
   route();
+  watchWallet();
 }
 init();
 </script>

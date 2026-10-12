@@ -31,6 +31,7 @@ Sharewood Forest is independent. It is not affiliated with or endorsed by Robinh
 - [Smart contracts](https://github.com/SharewoodForest/Contracts): contract source
 - [Website source](https://github.com/SharewoodForest/Web): static HTML/CSS/JS, no build step
 - [Security contact](https://sharewoodforest.app/.well-known/security.txt)
+- [X / Twitter: @SharewoodGifts](https://x.com/SharewoodGifts): official account
 - Contact: hello@sharewoodforest.app
 
 ## Optional

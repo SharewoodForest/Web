@@ -694,7 +694,8 @@ const GIFTS_ABI = [
   "function fee() view returns (uint256)",
   "function getGift(uint256 giftId) view returns (tuple(address sender,address claimSigner,uint64 expiresAt,uint8 status,uint256 ethAmount,uint256 gasTip,address[] tokens,uint256[] amounts,string cardURI))",
   "event GiftCreated(uint256 indexed giftId,address indexed sender,address claimSigner,uint64 expiresAt)",
-  "error BadInput()","error FeeTooHigh()","error NotOpen()","error Expired()","error NotExpired()","error NotSender()","error BadSignature()","error EthTransferFailed()",
+  "error BadInput()","error FeeTooHigh()","error NotOpen()","error Expired()","error NotExpired()","error NotSender()","error BadSignature()","error EthTransferFailed()","error TokenNotAllowed(address token)",
+  "function isTokenAccepted(address token) view returns (bool)",
 ];
 const ERC20_ABI = [
   "function symbol() view returns (string)",
@@ -1035,6 +1036,7 @@ function friendlyError(e) {
         NotExpired: "This gift hasn't expired yet. You can take it back after it expires.",
         NotSender: "Only the person who sent this gift can take it back.",
         BadInput: "Something in the gift is missing or invalid. Check the amounts and token addresses.",
+        TokenNotAllowed: "One of these tokens isn't approved on Sharewood yet. Email hello@sharewoodforest.app to ask for it to be added.",
       };
       if (map[name]) return map[name];
     } catch {}
@@ -1122,7 +1124,7 @@ function onPick(e) {
 
 async function lookupToken(row) {
   const addr = row.querySelector(".tok-addr").value.trim(), out = row.querySelector(".sym");
-  row.dataset.symbol = ""; row.dataset.decimals = "";
+  row.dataset.symbol = ""; row.dataset.decimals = ""; row.dataset.blocked = "";
   if (!addr) { out.textContent = ""; return; }
   if (!ethers.isAddress(addr)) { out.textContent = "That isn't a valid address."; return; }
   const c = CHAINS[$("chainSel").value];
@@ -1133,6 +1135,13 @@ async function lookupToken(row) {
     const [sym, dec] = await Promise.all([t.symbol(), t.decimals()]);
     row.dataset.symbol = sym; row.dataset.decimals = String(dec);
     out.textContent = `${sym} on ${c.name}`;
+    // Newer contracts keep an approved-token list; older ones don't have the check, so a failed call is ignored.
+    if (c.gifts) {
+      try {
+        const ok = await new ethers.Contract(c.gifts, GIFTS_ABI, new ethers.JsonRpcProvider(c.rpc, c.id, { staticNetwork: true })).isTokenAccepted(addr);
+        if (!ok) { out.textContent = `${sym} isn't approved on Sharewood yet. Email hello@sharewoodforest.app to request it.`; row.dataset.blocked = "1"; }
+      } catch {}
+    }
   } catch { out.textContent = `No token found at this address on ${c.name}.`; }
   renderSummary();
 }
@@ -1179,6 +1188,7 @@ async function sendGift() {
     for (const row of $("tokenRows").children) {
       const addr = row.querySelector(".tok-addr").value.trim(), amt = row.querySelector(".tok-amt").value;
       if (!addr && !amt) continue;
+      if (row.dataset.blocked) throw new Error(`${row.dataset.symbol} isn't approved on Sharewood yet. Remove it, or email hello@sharewoodforest.app to request it.`);
       if (!row.dataset.decimals) throw new Error("One of the tokens couldn't be found. Check the address or remove it.");
       if (!amt || Number(amt) <= 0) throw new Error(`Enter an amount for ${row.dataset.symbol}.`);
       tokens.push(addr); amounts.push(ethers.parseUnits(amt, Number(row.dataset.decimals)));

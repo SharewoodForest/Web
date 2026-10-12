@@ -337,6 +337,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none;bo
 .item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px dashed var(--line-s);font-size:1rem}
 .item:first-of-type{border-top:0}
 .item b{font:700 1.05rem var(--mono);color:var(--gold-l)}
+.tok-badge{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;font:700 .68rem var(--mono);letter-spacing:.04em;vertical-align:middle}
+.tok-badge.ok{background:rgba(52,211,153,.12);color:var(--ok);border:1px solid rgba(52,211,153,.35)}
+.tok-badge.warn{background:rgba(248,113,113,.12);color:var(--bad);border:1px solid rgba(248,113,113,.4)}
+.item small{display:block;font:500 .74rem var(--mono);color:var(--muted)}
+.item small a{color:var(--muted)}
+.contents .fine{margin:10px 0 0}
+.unverified{margin:14px 0 4px;padding:14px 16px;border-radius:var(--radius-sm);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.4);text-align:left;font-size:.9rem}
+.unverified b{color:var(--bad)}
 .fine{font-size:.84rem;color:var(--muted)}
 
 /* Sent gifts */
@@ -437,7 +445,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           </div>
           <details class="advanced" id="advToken">
             <summary>Advanced: a token that isn't listed</summary>
-            <p class="fine">Most gifts only need the tiles above. If you need something else, you can add it by its contract address.</p>
+            <p class="fine">Most gifts only need the tiles above. If you need something else, you can add it by its contract address. Tokens added this way are shown to the recipient as <b>unverified</b>.</p>
             <button class="btn ghost small add-token" id="addTokenBtn" type="button">Add by contract address</button>
           </details>
           <p class="fine" style="margin-top:10px">Up to 5 tokens per gift, plus ETH.</p>
@@ -538,7 +546,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     <div class="contents" id="claimContents" hidden>
       <h2>Inside</h2>
       <div id="claimItems"></div>
+      <p class="fine">The card's words are written by the sender. This list is what's actually inside, read from the blockchain.</p>
     </div>
+    <div class="unverified" id="claimUnverified" hidden></div>
     <p class="fine verify" id="claimVerify" hidden></p>
     <button class="btn big" id="claimBtn" hidden>Open gift</button>
     <p class="fine" id="claimGasNote" hidden style="text-align:center;margin-top:10px"></p>
@@ -1264,21 +1274,34 @@ async function showClaim(key, giftId, keyHex) {
     $("noteLock")?.remove();
     if (card.private) $("claimCard").insertAdjacentHTML("afterend", `<p class="note-lock" id="noteLock">🔒 This note is private. Only people with your gift link can read it.</p>`);
 
+    /* Only tokens on Sharewood's own list count as verified. A token's name and symbol are set by
+       whoever made it, so anything else is shown with a warning (a fake "AAPL" can't pass as real). */
     const items = [];
-    if (g.ethAmount > 0n) items.push(["ETH", ethers.formatEther(g.ethAmount)]);
+    if (g.ethAmount > 0n) items.push({ sym: "ETH", amt: ethers.formatEther(g.ethAmount), verified: true, name: "Ether" });
     for (let i = 0; i < g.tokens.length; i++) {
-      const t = new ethers.Contract(g.tokens[i], ERC20_ABI, provider);
-      let sym = g.tokens[i].slice(0, 8) + "…", dec = 18;
+      const addr = g.tokens[i];
+      const known = (TOKENS[key] || []).find((x) => x.address.toLowerCase() === addr.toLowerCase());
+      const t = new ethers.Contract(addr, ERC20_ABI, provider);
+      let sym = addr.slice(0, 8) + "…", dec = known ? known.decimals : 18;
       try { [sym, dec] = await Promise.all([t.symbol(), t.decimals()]); } catch {}
-      items.push([sym, ethers.formatUnits(g.amounts[i], dec)]);
+      items.push(known
+        ? { sym: known.symbol, name: known.name, amt: ethers.formatUnits(g.amounts[i], dec), verified: true, addr }
+        : { sym: String(sym).slice(0, 16), amt: ethers.formatUnits(g.amounts[i], dec), verified: false, addr });
     }
-    $("claimItems").innerHTML = items.map(([s, a]) => `<div class="item"><span>${esc(s)}</span><b>${esc(a)}</b></div>`).join("");
+    const addrLink = (a) => c.explorer ? `<a href="${esc(c.explorer)}/address/${esc(a)}" target="_blank" rel="noopener">${esc(a.slice(0, 8))}…${esc(a.slice(-6))}</a>` : esc(a);
+    $("claimItems").innerHTML = items.map((it) => `<div class="item"><span>${it.verified ? esc(it.sym) : `“${esc(it.sym)}”`}`
+      + (it.verified ? `<span class="tok-badge ok" title="On Sharewood's verified token list">✓ Verified</span>` : `<span class="tok-badge warn">⚠ Unverified</span>`)
+      + (it.verified ? (it.name ? `<small>${esc(it.name)}</small>` : "") : `<small>Contract ${addrLink(it.addr)}</small>`)
+      + `</span><b>${esc(it.amt)}</b></div>`).join("");
+    const unverified = items.filter((it) => !it.verified);
+    $("claimUnverified").hidden = unverified.length === 0;
+    if (unverified.length) $("claimUnverified").innerHTML = `<b>⚠ This gift contains ${unverified.length === 1 ? "a token" : "tokens"} Sharewood hasn't verified.</b> A token's name is chosen by whoever created it, so ${unverified.map((it) => `“${esc(it.sym)}”`).join(", ")} may not be what it says and could be worthless. Receiving it can't take anything from your wallet, but don't approve or trade it on sites you don't trust.`;
     $("claimContents").hidden = false;
     if (c.explorer) {
       $("claimVerify").innerHTML = `Gift #${esc(giftId)} is held by the Sharewood contract on ${esc(c.name)}. <a href="${esc(c.explorer)}/address/${esc(c.gifts)}" target="_blank" rel="noopener">Verify it on the explorer</a>`;
       $("claimVerify").hidden = false;
     }
-    claimSymbols = items.map(([sym]) => sym);
+    claimSymbols = items.filter((it) => it.verified).map((it) => it.sym);
 
     const status = Number(g.status), expired = Date.now() / 1000 >= Number(g.expiresAt);
     const until = new Date(Number(g.expiresAt) * 1000).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });

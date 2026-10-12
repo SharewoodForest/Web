@@ -102,7 +102,7 @@
           "name": "How does the person open their gift?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "They open the link, connect any Ethereum-compatible wallet and tap Open gift. The contents and a keepsake gift certificate go to their wallet. If the sender covered the network fee, opening is free for them."
+            "text": "They open the link, connect any Ethereum-compatible wallet and tap Open gift. The contents and a keepsake gift certificate go to their wallet. If the sender covered the network fee, opening is free for them. No wallet yet? The page walks them through installing one on their phone."
           }
         },
         {
@@ -126,7 +126,7 @@
           "name": "Is the gift link private?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The key that opens a gift sits after the # in the link, so browsers never send it to any server. Anyone who has the whole link can open the gift, so share it only with the person it's for."
+            "text": "The key that opens a gift sits after the # in the link, so browsers never send it to any server. Anyone who has the whole link can open the gift, so share it only with the person it's for. Your dedication is encrypted with the same key, so only someone with the link can read it, unless you choose to engrave it on the public certificate."
           }
         },
         {
@@ -206,9 +206,9 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-
 .sent-empty span{font-size:.88rem;color:var(--muted);max-width:40ch}
 .sent-list[hidden]{display:none}
 .linkish{background:none;border:0;padding:0;color:var(--gold);cursor:pointer;font:inherit;text-decoration:underline;text-underline-offset:3px}
-#donateDlg{width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:24px;border-radius:var(--radius-lg);border:1px solid var(--line);background:#0c2016;color:var(--text);box-shadow:0 40px 80px -20px rgba(0,0,0,.9)}
-#donateDlg::backdrop{background:rgba(3,10,6,.72);backdrop-filter:blur(4px)}
-#donateDlg h2{font:700 1.4rem var(--display);margin:6px 0 4px}
+#donateDlg,#walletDlg{width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:24px;border-radius:var(--radius-lg);border:1px solid var(--line);background:#0c2016;color:var(--text);box-shadow:0 40px 80px -20px rgba(0,0,0,.9)}
+#donateDlg::backdrop,#walletDlg::backdrop{background:rgba(3,10,6,.72);backdrop-filter:blur(4px)}
+#donateDlg h2,#walletDlg h2{font:700 1.4rem var(--display);margin:6px 0 4px}
 .dlg-close{position:absolute;top:12px;right:12px;margin:0}
 .dlg-fox{width:72px;margin:0 auto 4px}
 #donateDlg .picker{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
@@ -360,6 +360,19 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
   .addr{display:none}
   .row{grid-template-columns:1fr}
 }
+.share-box .share-label,.share-label{margin:18px 0 8px;font:700 .74rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-l)}
+.share-label small{font:500 .78rem var(--sans);text-transform:none;letter-spacing:0;color:var(--muted)}
+.share-grid{display:flex;flex-wrap:wrap;gap:8px}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.qr-box{background:#fff;padding:10px;border-radius:12px;width:min(220px,100%);margin:14px auto 0}
+.qr-box svg,.qr-box img{display:block;width:100%;height:auto}
+.wsteps{padding-left:20px;margin:14px 0 4px}
+.wsteps li{margin:0 0 14px;color:var(--muted)}
+.wsteps b{color:var(--text)}
+.wsteps .share-grid{margin-top:8px}
+.claim-share{text-align:center;margin-top:20px}
+.claim-share .share-grid{justify-content:center;margin-bottom:18px}
+.note-lock{font-size:.84rem;color:var(--muted);margin:10px 0 0;text-align:center}
 .advanced{margin-top:12px;border-top:1px dashed var(--line-s);padding-top:10px}
 .advanced summary{cursor:pointer;color:var(--muted);font-size:.84rem}
 .advanced[open] summary{margin-bottom:6px}
@@ -435,6 +448,7 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
           <textarea id="msg" maxlength="110" placeholder="Happy birthday. Plant it and watch it grow."></textarea>
           <label>Style</label>
           <div class="themes" id="themes"></div>
+          <label class="check"><input type="checkbox" id="privateNote" checked> <span>Keep the dedication private. It's encrypted with the gift link, so only the person you send it to can read it. Untick to engrave it on the public certificate instead.</span></label>
         </li>
 
         <li class="step">
@@ -460,11 +474,24 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
         <div class="stage-note"><span>Minted to them as a keepsake when they open it.</span><button class="btn ghost small" id="shuffleBtn" type="button">New serial</button></div>
         <div class="share-box" id="shareBox">
           <h2 class="foil">Your gift is sealed.</h2>
-          <p>Send this link to the person it's for. Anyone with the link can open the gift, so share it only with them.</p>
+          <p>Send this link only to the person it's for. Anyone with the whole link can open the gift.</p>
           <input id="shareLink" readonly aria-label="Gift link">
-          <div class="share-actions">
-            <button class="btn small" id="copyBtn">Copy link</button>
-            <button class="btn ghost small" id="nativeShareBtn" hidden>Share</button>
+          <p class="share-label">Send it to them privately</p>
+          <div class="share-grid">
+            <a class="btn small" id="shareWa" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="btn small" id="shareTg" target="_blank" rel="noopener">Telegram</a>
+            <a class="btn small" id="shareSms">Text message</a>
+            <a class="btn small" id="shareMail">Email</a>
+            <button class="btn ghost small" id="nativeShareBtn" type="button" hidden>More apps</button>
+            <button class="btn ghost small" id="qrBtn" type="button">Show QR code</button>
+            <button class="btn ghost small" id="copyBtn" type="button">Copy link</button>
+          </div>
+          <div class="qr-box" id="shareQr" hidden></div>
+          <p class="share-label">Tell your followers <small>(the gift link is never included)</small></p>
+          <div class="share-grid">
+            <a class="btn ghost small" id="postX" target="_blank" rel="noopener">Post on X</a>
+            <a class="btn ghost small" id="postFc" target="_blank" rel="noopener">Cast on Farcaster</a>
+            <a class="btn ghost small" id="postFb" target="_blank" rel="noopener">Share on Facebook</a>
           </div>
         </div>
       </aside>
@@ -507,20 +534,30 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
     </div>
     <button class="btn big" id="claimBtn" hidden>Open gift</button>
     <p class="fine" id="claimGasNote" hidden style="text-align:center;margin-top:10px"></p>
+    <p class="fine" id="claimNoWallet" hidden style="text-align:center">No wallet on this device yet? <button class="linkish" type="button" id="claimWalletHelp">Here's how to get one in about two minutes</button></p>
     <div class="status" id="claimStatus" role="status" aria-live="polite"></div>
+    <div class="claim-share" id="claimShare" hidden>
+      <p class="share-label">Share the good news <small>(your gift link is never included)</small></p>
+      <div class="share-grid">
+        <a class="btn ghost small" id="cPostX" target="_blank" rel="noopener">Post on X</a>
+        <a class="btn ghost small" id="cPostFc" target="_blank" rel="noopener">Cast on Farcaster</a>
+        <a class="btn ghost small" id="cPostFb" target="_blank" rel="noopener">Share on Facebook</a>
+      </div>
+      <a class="btn big" href="/">Send a gift of your own</a>
+    </div>
   </section>
 <section class="about" id="faq" aria-labelledby="faqTitle">
     <h2 id="faqTitle" class="foil">Questions, answered</h2>
     <h3>What is Sharewood Forest?</h3>
     <p>Sharewood Forest is a web app for giving tokens, tokenized stocks and ETH as a gift. You choose what to give, write a short dedication, and seal it into a smart contract. You get a private link to send to the person it&#x27;s for.</p>
     <h3>How does the person open their gift?</h3>
-    <p>They open the link, connect any Ethereum-compatible wallet and tap Open gift. The contents and a keepsake gift certificate go to their wallet. If the sender covered the network fee, opening is free for them.</p>
+    <p>They open the link, connect any Ethereum-compatible wallet and tap Open gift. The contents and a keepsake gift certificate go to their wallet. If the sender covered the network fee, opening is free for them. No wallet yet? The page walks them through installing one on their phone.</p>
     <h3>Do I need to copy or paste any wallet details?</h3>
     <p>No. You connect your wallet and approve each step inside your wallet app. Sharewood Forest never asks for your seed phrase or wallet private key, and you don&#x27;t paste a recipient address. An optional advanced control lets you add a token by its contract address if it isn&#x27;t listed.</p>
     <h3>What happens if a gift isn&#x27;t opened?</h3>
     <p>Every gift has an expiry that you choose, from 7 days to 1 year. After it expires, the sender can take the gift back from the same page.</p>
     <h3>Is the gift link private?</h3>
-    <p>The key that opens a gift sits after the # in the link, so browsers never send it to any server. Anyone who has the whole link can open the gift, so share it only with the person it&#x27;s for.</p>
+    <p>The key that opens a gift sits after the # in the link, so browsers never send it to any server. Anyone who has the whole link can open the gift, so share it only with the person it&#x27;s for. Your dedication is encrypted with the same key, so only someone with the link can read it, unless you choose to engrave it on the public certificate.</p>
     <h3>Which networks does it support?</h3>
     <p>Robinhood Chain, Base and Arbitrum, plus test networks for trying it out. The network menu in the app shows what is live. The contract source is public at github.com/SharewoodForest/Contracts.</p>
     <h3>Is Sharewood Forest affiliated with Robinhood?</h3>
@@ -531,6 +568,26 @@ footer{text-align:center;font-size:.82rem;color:var(--muted);padding:24px 16px 4
 </main>
 
 <footer>Sharewood Forest. Gifts are held by a smart contract until they're opened or returned. <button class="linkish" type="button" id="donateFooterBtn">Support the project</button></footer>
+
+<dialog id="walletDlg" aria-labelledby="walletTitle">
+  <form method="dialog" class="dlg-close"><button class="icon-btn" aria-label="Close">×</button></form>
+  <h2 id="walletTitle" class="foil">Get a wallet to continue</h2>
+  <p class="fine">A wallet is a free app that holds your tokens and gifts. Setting one up takes about two minutes.</p>
+  <div id="walletMobile" hidden>
+    <ol class="wsteps">
+      <li><b>Install a wallet app.</b>
+        <span class="share-grid"><a class="btn small" id="getRh" target="_blank" rel="noopener">Robinhood Wallet</a><a class="btn ghost small" href="https://metamask.io/download/" target="_blank" rel="noopener">MetaMask</a></span></li>
+      <li><b>Create your wallet</b> in the app. Write your recovery phrase down and keep it safe. Never share it with anyone, including Sharewood Forest.</li>
+      <li><b>Come back to this page inside the wallet.</b> <span id="walletReturnText"></span>
+        <span class="share-grid" id="walletReturn"></span></li>
+    </ol>
+  </div>
+  <div id="walletDesktop" hidden>
+    <p class="fine" style="color:var(--text)">Easiest on your phone: scan this code with your phone's camera to open this page there, then follow the steps.</p>
+    <div class="qr-box" id="walletQr"></div>
+    <p class="fine" style="margin-top:14px">Staying on this computer? Install the <a href="https://metamask.io/download/" target="_blank" rel="noopener">MetaMask browser extension</a> or another Ethereum wallet, then refresh this page.</p>
+  </div>
+</dialog>
 
 <dialog id="donateDlg" aria-labelledby="donateTitle">
   <form method="dialog" class="dlg-close"><button class="icon-btn" aria-label="Close">×</button></form>
@@ -673,7 +730,7 @@ function tree(shape, x, base, h, color, rnd) {
 
 
 function certSVG(T, { to = "", from = "", msg = "", contents = "", seed = 1 }) {
-  const serial = String((hashStr(`${to}|${from}|${msg}`) ^ (seed * 2654435761)) >>> 0).padStart(10, "0").slice(-6);
+  const serial = String(Math.imul(seed, 2654435761) >>> 0).padStart(10, "0").slice(-6);
   const ml = wrap(msg || "A little something to grow.", 52, 2);
   const lines = ml.map((l, i) => `<tspan x="300" dy="${i ? 19 : 0}">${i === 0 ? "\u201C" : ""}${esc(l)}${i === ml.length - 1 ? "\u201D" : ""}</tspan>`).join("");
   const big = esc(contents || "A gift from the forest");
@@ -708,7 +765,7 @@ function cardSVG(opts) {
   const { theme = "emerald", to = "", from = "", msg = "", seed = 1 } = opts;
   const T = THEMES[theme] || THEMES.emerald;
   if (T.cert) return certSVG(T, opts);
-  const rnd = rng(hashStr(`${to}|${from}|${msg}|${theme}`) ^ seed);
+  const rnd = rng(hashStr(theme) ^ seed);
   let forest = "";
   for (let layer = 0; layer < 2; layer++) {
     const n = 7 + Math.floor(rnd() * 5);
@@ -728,30 +785,153 @@ function cardSVG(opts) {
 }
 
 function b64(str) { return btoa(String.fromCharCode(...new TextEncoder().encode(str))); }
-function cardURI(opts) {
-  const svg = cardSVG(opts);
+async function cardURI(opts, privHex, keepPrivate) {
+  const pub = keepPrivate ? { ...opts, to: "", from: "", msg: "A private note is sealed inside." } : opts;
   const meta = {
-    name: `Sharewood gift for ${opts.to || "a friend"}`,
-    description: opts.msg || "A gift from the Sharewood Forest.",
-    image: "data:image/svg+xml;base64," + b64(svg),
+    name: keepPrivate ? "Sharewood gift" : `Sharewood gift for ${opts.to || "a friend"}`,
+    description: keepPrivate ? "A gift from the Sharewood Forest. The dedication is private." : (opts.msg || "A gift from the Sharewood Forest."),
+    image: "data:image/svg+xml;base64," + b64(cardSVG(pub)),
     attributes: [{ trait_type: "Style", value: THEMES[opts.theme].label }, ...(opts.contents ? [{ trait_type: "Holds", value: opts.contents }] : [])],
+    sharewood: { v: 2, theme: opts.theme, seed: opts.seed, contents: opts.contents || "",
+      ...(keepPrivate ? { note: await sealNote(privHex, { to: opts.to, from: opts.from, msg: opts.msg }) } : {}) },
   };
   return "data:application/json;base64," + b64(JSON.stringify(meta));
 }
-function imageFromURI(uri) {
+function parseMeta(uri) {
   try {
-    const json = uri.startsWith("data:application/json;base64,")
+    return uri.startsWith("data:application/json;base64,")
       ? JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(uri.split(",")[1]), (c) => c.charCodeAt(0))))
       : null;
-    return json && json.image ? json.image : null;
   } catch { return null; }
+}
+/* The card the recipient sees: private notes are decrypted and drawn in their browser. */
+async function claimCardImage(uri, privHex) {
+  const meta = parseMeta(uri);
+  const sw = meta && meta.sharewood;
+  if (sw && sw.v === 2 && sw.note) {
+    try {
+      const note = await openNote(privHex, sw.note);
+      const theme = THEMES[sw.theme] ? sw.theme : "emerald";
+      const seed = Number(sw.seed) || 1;
+      return { img: "data:image/svg+xml;base64," + b64(cardSVG({ theme, seed, contents: String(sw.contents || ""), ...note })), private: true };
+    } catch {}
+  }
+  return { img: meta && meta.image ? meta.image : null, private: false };
+}
+
+/* ======================= Sharing ======================= */
+const SITE_URL = "https://sharewoodforest.app/";
+const enc = encodeURIComponent;
+/* Public posts never include a gift link: the link opens the gift. */
+function setPublicShare(ids, text) {
+  $(ids[0]).href = `https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(SITE_URL)}`;
+  $(ids[1]).href = `https://farcaster.xyz/~/compose?text=${enc(text)}&embeds[]=${enc(SITE_URL)}`;
+  $(ids[2]).href = `https://www.facebook.com/sharer/sharer.php?u=${enc(SITE_URL)}`;
+}
+function setPrivateShare(link) {
+  const text = `I sent you a gift on Sharewood Forest. Open it here: ${link}`;
+  $("shareWa").href = `https://wa.me/?text=${enc(text)}`;
+  $("shareTg").href = `https://t.me/share/url?url=${enc(link)}&text=${enc("I sent you a gift on Sharewood Forest.")}`;
+  $("shareSms").href = `sms:?&body=${enc(text)}`;
+  $("shareMail").href = `mailto:?subject=${enc("A gift for you")}&body=${enc(text)}`;
+  $("shareQr").hidden = true; $("qrBtn").textContent = "Show QR code"; $("copyBtn").textContent = "Copy link";
+}
+function listSymbols(syms) {
+  const u = [...new Set(syms.filter(Boolean))];
+  if (!u.length) return "a gift";
+  return u.length > 3 ? `${u.slice(0, 3).join(", ")} and more` : u.length === 1 ? u[0] : `${u.slice(0, -1).join(", ")} and ${u[u.length - 1]}`;
+}
+function giftSymbols() {
+  const syms = [...$("tokenRows").children].map((r) => r.dataset.symbol);
+  if ($("ethAmt").value && Number($("ethAmt").value) > 0) syms.push("ETH");
+  return syms;
+}
+
+/* QR codes are drawn in the browser; the library is loaded only when needed. */
+let qrLoading = null;
+function loadQr() {
+  if (window.qrcode) return Promise.resolve();
+  if (!qrLoading) qrLoading = new Promise((resolve, reject) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+    sc.integrity = "sha512-ZDSPMa/JM1D+7kdg2x3BsruQ6T/JpJo3jWDWkCZsP+5yVyp1KfESqLI+7RqB5k24F7p2cV7i2YHh/890y6P6Sw==";
+    sc.crossOrigin = "anonymous"; sc.referrerPolicy = "no-referrer";
+    sc.onload = resolve;
+    sc.onerror = () => { qrLoading = null; reject(new Error("The QR code couldn't load. Check your connection and try again.")); };
+    document.head.appendChild(sc);
+  });
+  return qrLoading;
+}
+async function renderQr(el, text) {
+  await loadQr();
+  const q = window.qrcode(0, "M");
+  q.addData(text); q.make();
+  el.innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true, alt: "QR code for this link" });
+  el.hidden = false;
+}
+
+/* Wallet setup guide for people who don't have a wallet yet. */
+function deviceKind() {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+  if (/Android/i.test(ua)) return "android";
+  return "desktop";
+}
+function openWalletHelp() {
+  const kind = deviceKind(), dlg = $("walletDlg");
+  $("walletMobile").hidden = kind === "desktop";
+  $("walletDesktop").hidden = kind !== "desktop";
+  $("getRh").href = kind === "ios" ? "https://apps.apple.com/us/app/robinhood-wallet-swap-crypto/id1634080733"
+    : kind === "android" ? "https://play.google.com/store/apps/details?id=com.robinhood.gateway"
+    : "https://robinhood.com/web3-wallet/";
+  // Gift links carry the key that opens the gift, so they are never handed to a third-party redirect.
+  const secret = location.hash.startsWith("#claim/");
+  if (secret) {
+    $("walletReturnText").textContent = "Open the wallet's browser tab, then paste this gift link into it.";
+    $("walletReturn").innerHTML = `<button class="btn small" type="button" id="walletCopy">Copy gift link</button>`;
+    $("walletCopy").onclick = async () => { try { await navigator.clipboard.writeText(location.href); $("walletCopy").textContent = "Copied"; } catch {} };
+  } else {
+    $("walletReturnText").textContent = "Tap below once the app is installed, or open its browser tab and go to sharewoodforest.app.";
+    $("walletReturn").innerHTML = `<a class="btn small" href="https://metamask.app.link/dapp/${location.host}${location.pathname}">Open in MetaMask</a>`;
+  }
+  if (kind === "desktop") renderQr($("walletQr"), location.href).catch(() => { $("walletQr").hidden = true; });
+  if (!dlg.open) dlg.showModal();
+}
+
+/* ======================= Private dedication ======================= */
+/* To, From and the message are encrypted with a key derived from the gift link's claim key.
+   Only someone holding the full link can read them; the chain only stores ciphertext. */
+const NOTE_INFO = new TextEncoder().encode("sharewood-note-v1");
+const u8ToB64 = (u8) => btoa(String.fromCharCode(...u8));
+const b64ToU8 = (b) => Uint8Array.from(atob(b), (c) => c.charCodeAt(0));
+async function noteKey(privHex) {
+  const raw = ethers.getBytes(privHex.startsWith("0x") ? privHex : "0x" + privHex);
+  const buf = new Uint8Array(NOTE_INFO.length + raw.length);
+  buf.set(NOTE_INFO); buf.set(raw, NOTE_INFO.length);
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
+}
+async function sealNote(privHex, note) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await noteKey(privHex), new TextEncoder().encode(JSON.stringify(note))));
+  return { alg: "AES-256-GCM", iv: u8ToB64(iv), ct: u8ToB64(ct) };
+}
+async function openNote(privHex, box) {
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ToU8(box.iv) }, await noteKey(privHex), b64ToU8(box.ct));
+  const n = JSON.parse(new TextDecoder().decode(pt));
+  return { to: String(n.to || "").slice(0, 24), from: String(n.from || "").slice(0, 24), msg: String(n.msg || "").slice(0, 110) };
 }
 
 /* ======================= Wallet ======================= */
 let browserProvider = null, signer = null, account = null;
 
 async function connect() {
-  if (!window.ethereum) { throw new Error("No wallet found. Install a wallet like MetaMask, Rabby or Coinbase Wallet, or open this page in your wallet's browser."); }
+  if (!window.ethereum) {
+    openWalletHelp();
+    const e = new Error("You'll need a wallet first. The steps are on screen.");
+    e.quiet = true;
+    throw e;
+  }
   browserProvider = new ethers.BrowserProvider(window.ethereum);
   await browserProvider.send("eth_requestAccounts", []);
   signer = await browserProvider.getSigner();
@@ -832,7 +1012,7 @@ function friendlyError(e) {
 function setStatus(el, kind, text) { el.className = `status show ${kind}`; el.textContent = text; }
 
 /* ======================= Send view ======================= */
-let theme = "emerald", seed = 1;
+let theme = "emerald", seed = 1 + Math.floor(Math.random() * 2147483646);
 
 function renderThemes() {
   $("themes").innerHTML = Object.entries(THEMES).map(([k, t]) =>
@@ -989,7 +1169,8 @@ async function sendGift() {
     const days = Number($("expiry").value);
     setStatus(st, "info", "Confirm the gift in your wallet.");
     const tip = $("coverGas").checked ? gasTipFor(key) : 0n;
-    const tx = await gifts.createGift(tokens, amounts, claimKey.address, days * 86400, tip, cardURI(opts), { value: fee + tip + ethAmt });
+    const uri = await cardURI(opts, claimKey.privateKey, $("privateNote").checked);
+    const tx = await gifts.createGift(tokens, amounts, claimKey.address, days * 86400, tip, uri, { value: fee + tip + ethAmt });
     setStatus(st, "info", "Sealing your gift…");
     const rc = await tx.wait();
 
@@ -1001,6 +1182,8 @@ async function sendGift() {
 
     const link = `${location.origin}${location.pathname}#claim/${key}/${giftId}/${claimKey.privateKey.slice(2)}`;
     $("shareLink").value = link;
+    setPrivateShare(link);
+    setPublicShare(["postX", "postFc", "postFb"], `I just sent someone ${listSymbols(giftSymbols())} as a gift on Sharewood Forest 🦊🎁 Give someone a piece of a company they love:`);
     $("shareBox").classList.add("show");
     setStatus(st, "ok", "Gift sealed.");
     saveSent({ key, giftId, link, to: opts.to, at: Date.now(), expires: Date.now() + days * 86400000 });
@@ -1034,7 +1217,7 @@ async function refundGift(g, btn) {
 }
 
 /* ======================= Claim view ======================= */
-let claimCtx = null;
+let claimCtx = null, claimSymbols = [];
 
 async function showClaim(key, giftId, keyHex) {
   $("sendView").hidden = true; $("claimView").hidden = false; $("faq").hidden = true;
@@ -1048,8 +1231,10 @@ async function showClaim(key, giftId, keyHex) {
     if (Number(g.status) === 0) throw new Error("This gift doesn't exist. Check you copied the whole link.");
     if (g.claimSigner.toLowerCase() !== claimKey.address.toLowerCase()) throw new Error("This link doesn't match the gift. Check you copied the whole link.");
 
-    const img = imageFromURI(g.cardURI);
-    $("claimCard").innerHTML = img ? `<img alt="Gift card" src="${esc(img)}">` : "";
+    const card = await claimCardImage(g.cardURI, keyHex);
+    $("claimCard").innerHTML = card.img ? `<img alt="Gift card" src="${esc(card.img)}">` : "";
+    $("noteLock")?.remove();
+    if (card.private) $("claimCard").insertAdjacentHTML("afterend", `<p class="note-lock" id="noteLock">🔒 This note is private. Only people with your gift link can read it.</p>`);
 
     const items = [];
     if (g.ethAmount > 0n) items.push(["ETH", ethers.formatEther(g.ethAmount)]);
@@ -1061,6 +1246,7 @@ async function showClaim(key, giftId, keyHex) {
     }
     $("claimItems").innerHTML = items.map(([s, a]) => `<div class="item"><span>${esc(s)}</span><b>${esc(a)}</b></div>`).join("");
     $("claimContents").hidden = false;
+    claimSymbols = items.map(([sym]) => sym);
 
     const status = Number(g.status), expired = Date.now() / 1000 >= Number(g.expiresAt);
     const until = new Date(Number(g.expiresAt) * 1000).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
@@ -1072,6 +1258,7 @@ async function showClaim(key, giftId, keyHex) {
     $("claimLead").textContent = `Open it on ${c.name} by ${until}. Everything inside, and the card, will go to your wallet.`;
     $("claimBtn").hidden = false;
     syncWalletLabels();
+    $("claimNoWallet").hidden = !!window.ethereum;
     $("claimGasNote").hidden = false;
     const tipped = g.gasTip > 0n;
     $("claimGasNote").textContent = RELAYER_URL
@@ -1201,6 +1388,9 @@ function claimDone() {
   $("claimLead").textContent = "The tokens and your gift card are now in your wallet.";
   $("claimBtn").hidden = true; $("claimGasNote").hidden = true;
   setStatus($("claimStatus"), "ok", "Gift opened.");
+  $("claimNoWallet").hidden = true;
+  setPublicShare(["cPostX", "cPostFc", "cPostFb"], `Someone just gave me ${listSymbols(claimSymbols)} as a gift on Sharewood Forest 🦊🎁 You can give someone a piece of a company they love too:`);
+  $("claimShare").hidden = false;
 }
 
 /* ======================= Routing + wiring ======================= */
@@ -1236,7 +1426,13 @@ function init() {
   $("ethRemove").onclick = () => { $("ethRow").hidden = true; $("ethAmt").value = ""; renderPicker(); renderSummary(); };
   $("sendBtn").onclick = sendGift;
   $("claimBtn").onclick = claimGift;
-  $("connectBtn").onclick = () => connect().catch((e) => alert(friendlyError(e)));
+  $("connectBtn").onclick = () => connect().catch((e) => { if (!e.quiet) alert(friendlyError(e)); });
+  $("claimWalletHelp").onclick = openWalletHelp;
+  $("qrBtn").onclick = async () => {
+    const box = $("shareQr");
+    if (!box.hidden) { box.hidden = true; $("qrBtn").textContent = "Show QR code"; return; }
+    try { await renderQr(box, $("shareLink").value); $("qrBtn").textContent = "Hide QR code"; } catch (e) { alert(e.message); }
+  };
   $("donateBtn").onclick = openDonate;
   $("donateFooterBtn").onclick = openDonate;
   $("donateChain").addEventListener("change", () => { donatePick = "eth"; $("donateAmt").value = ""; renderDonate(); });
@@ -1248,7 +1444,7 @@ function init() {
   $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText($("shareLink").value); $("copyBtn").textContent = "Copied"; } catch { $("shareLink").select(); } };
   if (navigator.share) {
     $("nativeShareBtn").hidden = false;
-    $("nativeShareBtn").onclick = () => navigator.share({ title: "A gift for you", text: "Someone sent you a gift on Sharewood Forest.", url: $("shareLink").value }).catch(() => {});
+    $("nativeShareBtn").onclick = () => navigator.share({ title: "A gift for you", text: "I sent you a gift on Sharewood Forest.", url: $("shareLink").value }).catch(() => {});
   }
   $("sentList").addEventListener("click", (e) => {
     const all = loadSent();

@@ -10,6 +10,9 @@ Sharewood Forest is independent. It is not affiliated with or endorsed by Robinh
 - Share the link. The key that opens the gift is after the "#" in the URL, so it is never sent to a server. Anyone with the full link can open the gift, so share it only with the recipient.
 - The recipient opens the link, connects a wallet and taps "Open gift". The sender can optionally cover the network fee so opening is free for the recipient.
 - Unopened gifts can be taken back by the sender after they expire.
+- The To/From/message dedication is private by default: it is encrypted (AES-256-GCM) with a key derived from the gift link, so only someone with the link can read it. Senders can choose to engrave it on the public certificate instead.
+- Recipients without a wallet get a step-by-step guide (Robinhood Wallet or MetaMask; a QR code on desktop to continue on a phone).
+- After sealing, senders can send the link privately (WhatsApp, Telegram, text message, email, QR code) and post about it publicly (X, Farcaster, Facebook). Public posts never include the gift link.
 
 ## Wallet safety
 - Sharewood Forest never asks for a seed phrase or a wallet private key.

@@ -375,6 +375,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .claim-share{text-align:center;margin-top:20px}
 .claim-share .share-grid{justify-content:center;margin-bottom:18px}
 .note-lock{font-size:.84rem;color:var(--muted);margin:10px 0 0;text-align:center}
+.receipt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.receipt .hash{font:600 .8rem var(--mono);color:var(--muted);margin-right:4px}
+.claim .receipt{justify-content:center}
+.verify{text-align:center;margin-top:10px}
 .advanced{margin-top:12px;border-top:1px dashed var(--line-s);padding-top:10px}
 .advanced summary{cursor:pointer;color:var(--muted);font-size:.84rem}
 .advanced[open] summary{margin-bottom:6px}
@@ -478,6 +482,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           <h2 class="foil">Your gift is sealed.</h2>
           <p>Send this link only to the person it's for. Anyone with the whole link can open the gift.</p>
           <input id="shareLink" readonly aria-label="Gift link">
+          <div id="sendReceipt"></div>
           <p class="share-label">Send it to them privately</p>
           <div class="share-grid">
             <a class="btn small" id="shareWa" target="_blank" rel="noopener">WhatsApp</a>
@@ -534,10 +539,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <h2>Inside</h2>
       <div id="claimItems"></div>
     </div>
+    <p class="fine verify" id="claimVerify" hidden></p>
     <button class="btn big" id="claimBtn" hidden>Open gift</button>
     <p class="fine" id="claimGasNote" hidden style="text-align:center;margin-top:10px"></p>
     <p class="fine" id="claimNoWallet" hidden style="text-align:center">No wallet on this device yet? <button class="linkish" type="button" id="claimWalletHelp">Here's how to get one in about two minutes</button></p>
     <div class="status" id="claimStatus" role="status" aria-live="polite"></div>
+    <div id="claimReceipt"></div>
     <div class="claim-share" id="claimShare" hidden>
       <p class="share-label">Share the good news <small>(your gift link is never included)</small></p>
       <div class="share-grid">
@@ -820,6 +827,21 @@ async function claimCardImage(uri, privHex) {
   }
   return { img: meta && meta.image ? meta.image : null, private: false };
 }
+
+/* ======================= Receipts ======================= */
+const isTxHash = (h) => typeof h === "string" && /^0x[0-9a-fA-F]{64}$/.test(h);
+function txUrl(c, hash) { return c && c.explorer && isTxHash(hash) ? `${c.explorer}/tx/${hash}` : ""; }
+function txReceiptHTML(c, hash, label = "Transaction") {
+  if (!isTxHash(hash)) return "";
+  const url = txUrl(c, hash);
+  return `<div class="receipt"><span class="hash" title="${esc(hash)}">${esc(label)} ${esc(hash.slice(0, 8))}…${esc(hash.slice(-6))}</span>`
+    + (url ? `<a class="btn ghost small" href="${esc(url)}" target="_blank" rel="noopener">View on explorer</a>` : "")
+    + `<button class="btn ghost small" type="button" data-copyhash="${esc(hash)}">Copy tx hash</button></div>`;
+}
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-copyhash]"); if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copyhash); b.textContent = "Copied"; } catch {}
+});
 
 /* ======================= Sharing ======================= */
 const SITE_URL = "https://sharewoodforest.app/";
@@ -1184,11 +1206,12 @@ async function sendGift() {
 
     const link = `${location.origin}${location.pathname}#claim/${key}/${giftId}/${claimKey.privateKey.slice(2)}`;
     $("shareLink").value = link;
+    $("sendReceipt").innerHTML = txReceiptHTML(c, tx.hash, "Sealed in");
     setPrivateShare(link);
     setPublicShare(["postX", "postFc", "postFb"], `I just sent someone ${listSymbols(giftSymbols())} as a gift on Sharewood Forest 🦊🎁 Give someone a piece of a company they love:`);
     $("shareBox").classList.add("show");
     setStatus(st, "ok", "Gift sealed.");
-    saveSent({ key, giftId, link, to: opts.to, at: Date.now(), expires: Date.now() + days * 86400000 });
+    saveSent({ key, giftId, link, tx: tx.hash, to: opts.to, at: Date.now(), expires: Date.now() + days * 86400000 });
     renderSent();
   } catch (e) {
     setStatus(st, "error", friendlyError(e));
@@ -1204,7 +1227,7 @@ function renderSent() {
   $("sentList").hidden = all.length === 0;
   $("sentList").innerHTML = all.map((g, i) => {
     const expired = Date.now() > g.expires;
-    return `<div class="sent-item"><span>For ${esc(g.to || "a friend")} on ${esc(CHAINS[g.key]?.name || g.key)}, gift #${esc(g.giftId)}</span><span style="display:flex;gap:8px"><button class="btn ghost small" data-copy="${i}">Copy link</button>${expired ? `<button class="btn small" data-refund="${i}">Take it back</button>` : ""}</span></div>`;
+    return `<div class="sent-item"><span>For ${esc(g.to || "a friend")} on ${esc(CHAINS[g.key]?.name || g.key)}, gift #${esc(g.giftId)}</span><span style="display:flex;gap:8px;flex-wrap:wrap">${txUrl(CHAINS[g.key], g.tx) ? `<a class="btn ghost small" href="${esc(txUrl(CHAINS[g.key], g.tx))}" target="_blank" rel="noopener">Receipt</a>` : ""}<button class="btn ghost small" data-copy="${i}">Copy link</button>${expired ? `<button class="btn small" data-refund="${i}">Take it back</button>` : ""}</span></div>`;
   }).join("");
 }
 async function refundGift(g, btn) {
@@ -1213,8 +1236,11 @@ async function refundGift(g, btn) {
     if (!account) await connect();
     await ensureChain(g.key);
     const gifts = new ethers.Contract(CHAINS[g.key].gifts, GIFTS_ABI, signer);
-    await (await gifts.refund(g.giftId)).wait();
+    const rtx = await gifts.refund(g.giftId);
+    await rtx.wait();
     btn.textContent = "Returned";
+    const url = txUrl(CHAINS[g.key], rtx.hash);
+    if (url) btn.insertAdjacentHTML("afterend", `<a class="btn ghost small" href="${esc(url)}" target="_blank" rel="noopener">Return receipt</a>`);
   } catch (e) { alert(friendlyError(e)); btn.disabled = false; }
 }
 
@@ -1248,6 +1274,10 @@ async function showClaim(key, giftId, keyHex) {
     }
     $("claimItems").innerHTML = items.map(([s, a]) => `<div class="item"><span>${esc(s)}</span><b>${esc(a)}</b></div>`).join("");
     $("claimContents").hidden = false;
+    if (c.explorer) {
+      $("claimVerify").innerHTML = `Gift #${esc(giftId)} is held by the Sharewood contract on ${esc(c.name)}. <a href="${esc(c.explorer)}/address/${esc(c.gifts)}" target="_blank" rel="noopener">Verify it on the explorer</a>`;
+      $("claimVerify").hidden = false;
+    }
     claimSymbols = items.map(([sym]) => sym);
 
     const status = Number(g.status), expired = Date.now() / 1000 >= Number(g.expiresAt);
@@ -1300,7 +1330,7 @@ async function claimGift() {
       if (res && res.status === 200 && res.body.txHash) {
         const provider = new ethers.JsonRpcProvider(c.rpc, c.id, { staticNetwork: true });
         const rc = await provider.waitForTransaction(res.body.txHash, 1, 120000);
-        if (rc && rc.status === 1) { claimDone(); return; }
+        if (rc && rc.status === 1) { claimDone(res.body.txHash); return; }
       } else if (res) {
         const msgs = {
           BadSignature: "This link doesn't match the gift. Check you copied the whole link.",
@@ -1326,7 +1356,7 @@ async function claimGift() {
     const tx = await gifts.claim(giftId, account, sig);
     setStatus(st, "info", "Opening…");
     await tx.wait();
-    claimDone();
+    claimDone(tx.hash);
   } catch (e) {
     setStatus(st, "error", friendlyError(e));
     $("claimBtn").disabled = false;
@@ -1376,15 +1406,15 @@ async function sendDonation() {
     else tx = await new ethers.Contract(t.address, ["function transfer(address,uint256) returns (bool)"], signer).transfer(DONATE_ADDRESS, value);
     setStatus(st, "info", "Sending…");
     await tx.wait();
-    const link = c.explorer ? ` <a href="${esc(c.explorer)}/tx/${esc(tx.hash)}" target="_blank" rel="noopener">View receipt</a>` : "";
-    st.className = "status show ok"; st.innerHTML = `Thank you! ${esc(amt)} ${esc(t.symbol)} received.${link}`;
+    st.className = "status show ok"; st.innerHTML = `Thank you! ${esc(amt)} ${esc(t.symbol)} received.${txReceiptHTML(c, tx.hash, "Donation")}`;
     $("donateDlg").querySelector(".dlg-fox").src = FOX_CELEBRATE;
   } catch (e) {
     setStatus(st, "error", friendlyError(e));
   } finally { $("donateSend").disabled = false; }
 }
 
-function claimDone() {
+function claimDone(hash) {
+  $("claimReceipt").innerHTML = txReceiptHTML(claimCtx && claimCtx.c, hash, "Opened in");
   $("claimFox").src = FOX_CELEBRATE;
   $("claimTitle").textContent = "It's yours.";
   $("claimLead").textContent = "The tokens and your gift card are now in your wallet.";

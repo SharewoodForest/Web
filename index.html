@@ -647,7 +647,8 @@ const FOX_CELEBRATE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAACOCAM
 
 /* Donations go straight to this wallet. Change it here if you want a different one. */
 const DONATE_ADDRESS = "0xA5150168262A895d755bBC82836679F30F3D31C6";
-const DONATE_PRESETS = { ETH: ["0.001", "0.005", "0.01", "0.05"], USDC: ["5", "10", "25", "50"] };
+const USD_PRESETS = ["5", "10", "25", "50"];
+const DONATE_PRESETS = { ETH: ["0.001", "0.005", "0.01", "0.05"], USDC: USD_PRESETS, USDG: USD_PRESETS, USDT: USD_PRESETS };
 
 /* Tokens shown as tap-to-pick tiles, per network. Addresses verified on-chain.
    Logos load from public image hosts; if one fails, a lettered badge shows instead. */
@@ -1398,9 +1399,29 @@ async function claimGift() {
 
 /* ======================= Donate ======================= */
 let donatePick = "eth";
+/* Stablecoins people can donate, per network (addresses checked on-chain; USDG from Paxos docs). */
+const USDT_LOGO = "https://assets.coingecko.com/coins/images/325/small/Tether.png";
+const USDG_LOGO = "";
+const usd = (symbol, name, address, logo) => ({ symbol, name, address, decimals: 6, kind: "Dollar", logo });
+const DONATE_STABLES = {
+  robinhood:        [usd("USDG", "Global Dollar", "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", USDG_LOGO)],
+  base:             [],
+  arbitrum:         [usd("USDG", "Global Dollar", "0x004B506865409877C9fA29bfb1ebA929984B9bbC", USDG_LOGO),
+                     usd("USDT", "Tether USD", "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", USDT_LOGO)],
+  robinhoodTestnet: [usd("USDG", "Test Global Dollar", "0x7E955252E15c84f5768B83c41a71F9eba181802F", USDG_LOGO)],
+  baseSepolia:      [],
+  arbitrumSepolia:  [usd("USDG", "Test Global Dollar", "0xFFC95faa3d63Cde504a05B567C600B78C0b41892", USDG_LOGO)],
+};
 function donateTokens() {
   const key = $("donateChain").value;
-  return [{ symbol: "ETH", name: "Ether", address: "eth", decimals: 18, kind: "Coin", logo: ETH_LOGO }, ...(TOKENS[key] || [])];
+  const seen = new Set(), out = [];
+  for (const t of [{ symbol: "ETH", name: "Ether", address: "eth", decimals: 18, kind: "Coin", logo: ETH_LOGO },
+                   ...(DONATE_STABLES[key] || []), ...(TOKENS[key] || [])]) {
+    const k = t.address.toLowerCase();
+    if (!seen.has(k)) { seen.add(k); out.push(t); }
+  }
+  // Dollars first after ETH, then stock tokens
+  return out.sort((a, b) => (a.address === "eth" ? -1 : b.address === "eth" ? 1 : (a.kind === "Dollar" ? 0 : 1) - (b.kind === "Dollar" ? 0 : 1)));
 }
 function renderDonate() {
   const list = donateTokens();
